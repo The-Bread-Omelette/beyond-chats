@@ -101,19 +101,7 @@ const ArticleDetailPage = () => {
 
       <Box sx={{ maxWidth: 900, mx: 'auto' }}>
         {/* Back Button */}
-        <motion.div
-          initial={{ opacity: 0, x: -20 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.3 }}
-        >
-          <Button
-            startIcon={<ArrowBack />}
-            onClick={() => navigate('/')}
-            sx={{ mb: 3 }}
-          >
-            Back to Articles
-          </Button>
-        </motion.div>
+
 
         <motion.div variants={fadeInUp} initial="initial" animate="animate" transition={{ delay: 0.1 }}>
           <ArticleHeader article={article} onEnhance={handleEnhance} onCompare={(aid) => navigate(`/compare/${aid || id}`)} />

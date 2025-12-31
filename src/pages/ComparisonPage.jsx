@@ -38,35 +38,57 @@ const ComparisonPage = () => {
                     initial={{ opacity: 0, y: -20 }}
                     animate={{ opacity: 1, y: 0 }}
                 >
-                    <Button
-                        startIcon={<ArrowBack />}
-                        onClick={() => navigate(`/article/${id}`)}
-                        sx={{ mb: 3 }}
+                    <Box
+                        sx={{
+                            display: 'flex',
+                            flexDirection: { xs: 'column', sm: 'row' },
+                            alignItems: { xs: 'flex-start', sm: 'center' },
+                            justifyContent: 'space-between',
+                            gap: 2,
+                            mb: 4,
+                            pb: 3,
+                            borderBottom: '1px solid rgba(255,255,255,0.05)'
+                        }}
                     >
-                        Back to Article
-                    </Button>
-
-                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 4 }}>
-                        <Box>
-                            <Typography variant="h3" sx={{ fontWeight: 700, mb: 1 }}>
-                                Content Comparison
-                            </Typography>
-                            <Typography variant="body1" color="text.secondary">
-                                Review the changes made by the enhancement engine
-                            </Typography>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                            <Button
+                                startIcon={<ArrowBack />}
+                                onClick={() => navigate(`/article/${id}`)}
+                                variant="text"
+                                color="inherit"
+                                sx={{
+                                    minWidth: 'auto',
+                                    p: 1.5,
+                                    borderRadius: '50%',
+                                    bgcolor: 'rgba(255,255,255,0.03)',
+                                    '&:hover': { bgcolor: 'rgba(255,255,255,0.08)' }
+                                }}
+                            >
+                            </Button>
+                            <Box>
+                                <Typography variant="h4" sx={{ fontWeight: 700, lineHeight: 1.2 }}>
+                                    Content Comparison
+                                </Typography>
+                                <Typography variant="body2" color="text.secondary">
+                                    Review AI enhancements against original
+                                </Typography>
+                            </Box>
                         </Box>
 
                         {/* 
-            <Tooltip title="Toggle view">
-              <IconButton>
-                <SwapHoriz />
-              </IconButton>
-            </Tooltip> 
-            */}
+                         <Tooltip title="Toggle view">
+                           <IconButton>
+                             <SwapHoriz />
+                           </IconButton>
+                         </Tooltip> 
+                         */}
                     </Box>
                 </motion.div>
 
-                <VersionCompare original={article.excerpt || ''} enhanced={article.content || ''} />
+                <VersionCompare
+                    original={article.originalContent || article.excerpt || ''}
+                    enhanced={article.content || ''}
+                />
 
                 {/* Stats */}
                 <motion.div

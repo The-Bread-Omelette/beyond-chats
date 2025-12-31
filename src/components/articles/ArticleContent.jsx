@@ -27,15 +27,20 @@ const ArticleContent = ({ article, activeTab, onTabChange }) => {
                 }
               }}
             >
-              <Tab label="Original Excerpt" />
+              <Tab label="Original Content" />
               <Tab label="Enhanced Article" />
             </Tabs>
           </Box>
 
           {activeTab === 0 && (
             <Box sx={{ p: 4, borderRadius: 3, bgcolor: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)' }}>
-              <Typography variant="body1" sx={{ whiteSpace: 'pre-wrap', lineHeight: 1.8, color: 'text.secondary', fontFamily: 'monospace' }}>
-                {article.excerpt || article.content}
+              {/* 
+                  If we have originalContent, use it. 
+                  If not, and we are enhanced, fallback to excerpt.
+                  If NOT enhanced, article.content IS the original.
+               */}
+              <Typography variant="body1" sx={{ whiteSpace: 'pre-wrap', lineHeight: 1.8, color: 'text.secondary' }}>
+                {article.originalContent || (hasEnhancedContent ? article.excerpt : article.content) || 'No content available'}
               </Typography>
             </Box>
           )}
@@ -51,9 +56,9 @@ const ArticleContent = ({ article, activeTab, onTabChange }) => {
         </Box>
       ) : (
         <Box sx={{ p: 4, borderRadius: 3, bgcolor: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)' }}>
-          <Typography variant="h6" gutterBottom color="text.secondary" fontWeight={500}>Original Content (Preview)</Typography>
+          <Typography variant="h6" gutterBottom color="text.secondary" fontWeight={500}>Original Content</Typography>
           <Typography variant="body1" sx={{ whiteSpace: 'pre-wrap', lineHeight: 1.8, color: 'text.secondary' }}>
-            {article.excerpt || article.content || 'No content available'}
+            {article.originalContent || article.content || 'No content available'}
           </Typography>
         </Box>
       )}

@@ -9,13 +9,28 @@ const ArticleHeader = ({ article, onEnhance, onCompare }) => {
 
   return (
     <Box sx={{ mb: 6 }}>
-      <Button
-        startIcon={<ArrowBackRounded />}
-        onClick={() => navigate('/')}
-        sx={{ mb: 4, color: 'text.secondary', '&:hover': { color: 'text.primary', bgcolor: 'transparent' } }}
-      >
-        Back to Dashboard
-      </Button>
+      {/* Breadcrumb / Nav */}
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 4, pb: 2, borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+        <Button
+          startIcon={<ArrowBackRounded />}
+          onClick={() => navigate('/')}
+          sx={{
+            color: 'text.secondary',
+            minWidth: 'auto',
+            p: 1,
+            borderRadius: '50%',
+            '&:hover': { color: 'text.primary', bgcolor: 'rgba(255,255,255,0.05)' }
+          }}
+        >
+        </Button>
+        <Typography variant="subtitle2" color="text.secondary" fontWeight={500}>
+          Dashboard
+        </Typography>
+        <Typography variant="subtitle2" color="text.disabled">/</Typography>
+        <Typography variant="subtitle2" color="text.primary" fontWeight={500} noWrap sx={{ maxWidth: 300 }}>
+          {article.title}
+        </Typography>
+      </Box>
 
       <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 4, alignItems: 'flex-start' }}>
         <Box sx={{ flex: 1 }}>

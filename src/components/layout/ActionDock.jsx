@@ -77,19 +77,19 @@ const ActionDock = () => {
                                     if (isMobile) setMobileOpen(false);
                                 }}
                                 whileHover={{ scale: 1.02, x: 4 }}
-                                whileTap={{ scale: 0.98 }}
+                            <Box
                                 sx={{
-                                    position: 'relative',
+                                    height: '100%',
                                     display: 'flex',
-                                    alignItems: 'center',
-                                    justifyContent: expanded && !isMobile ? 'flex-start' : 'center',
-                                    height: 48,
-                                    width: '100%',
-                                    cursor: 'pointer',
-                                    borderRadius: 2,
-                                    color: isActive ? 'white' : 'text.secondary',
+                                    flexDirection: 'column',
+                                    alignItems: expanded && !isMobile ? 'flex-start' : 'center',
+                                    padding: '20px 0',
+                                    background: 'linear-gradient(180deg, rgba(8,8,10,0.9), rgba(10,10,14,0.88))',
+                                    backdropFilter: 'blur(8px)',
+                                }}
+                            >
                                     background: isActive ? 'rgba(59, 130, 246, 0.1)' : 'transparent',
-                                    overflow: 'hidden',
+                                <Box sx={{ width: 36, height: 36, borderRadius: 8, background: 'linear-gradient(135deg, #3B82F6, #10B981)', boxShadow: '0 6px 18px rgba(2,6,23,0.5)' }} />
                                     transition: 'background 0.2s, color 0.2s',
                                     '&:hover': {
                                         color: 'white',
@@ -122,7 +122,7 @@ const ActionDock = () => {
                                 >
                                     <Icon sx={{ fontSize: 22, color: isActive ? '#3B82F6' : 'inherit' }} />
                                 </Box>
-
+                                                    background: isActive ? 'linear-gradient(90deg, rgba(59,130,246,0.08), rgba(16,185,129,0.03))' : 'transparent',
                                 {(expanded || isMobile) && (
                                     <Typography variant="body2" fontWeight={500} sx={{ whiteSpace: 'nowrap', ml: isMobile ? 2 : 0 }}>
                                         {item.label}

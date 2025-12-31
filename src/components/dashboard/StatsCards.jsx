@@ -9,14 +9,28 @@ import {
 } from '@mui/icons-material';
 
 const AnimatedCounter = ({ value }) => {
-  const spring = useSpring(0, { mass: 0.8, stiffness: 75, damping: 15 });
-  const display = useTransform(spring, (current) => Math.round(current));
+  const [display, setDisplay] = useState(0);
 
   useEffect(() => {
-    spring.set(value);
-  }, [value, spring]);
+    let raf = null;
+    const start = performance.now();
+    const from = display;
+    const to = Number(value || 0);
+    const duration = 700;
 
-  return <motion.span>{display}</motion.span>;
+    const tick = (now) => {
+      const t = Math.min((now - start) / duration, 1);
+      const eased = 1 - Math.pow(1 - t, 3);
+      const cur = Math.round(from + (to - from) * eased);
+      setDisplay(cur);
+      if (t < 1) raf = requestAnimationFrame(tick);
+    };
+
+    raf = requestAnimationFrame(tick);
+    return () => raf && cancelAnimationFrame(raf);
+  }, [value]);
+
+  return <motion.span style={{ fontVariantNumeric: 'tabular-nums' }}>{display}</motion.span>;
 };
 
 const StatCard = ({ icon: Icon, label, value, color, delay }) => {

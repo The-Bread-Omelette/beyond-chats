@@ -74,19 +74,19 @@ const StatusReveal = ({ status, meta }) => {
             style={{
                 display: 'inline-flex',
                 alignItems: 'center',
-                padding: '6px 12px',
+                padding: hovered ? '6px 12px' : '6px', // Equal padding when collapsed for perfect center
                 borderRadius: 99,
                 backgroundColor: config.bg,
                 border: `1px solid ${config.border}`,
                 cursor: 'default',
                 overflow: 'hidden',
                 height: 32,
+                boxSizing: 'border-box' // Ensure padding doesn't mess up width
             }}
             initial={false}
             animate={{
-                width: hovered ? 'auto' : 32, // Morph width
+                width: hovered ? 'auto' : 32,
                 gap: hovered ? 8 : 0,
-                paddingRight: hovered ? 12 : 6,
             }}
             transition={{ type: 'spring', stiffness: 500, damping: 30 }}
         >
