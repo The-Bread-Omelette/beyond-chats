@@ -10,7 +10,9 @@ function getEnvVar(key, defaultValue = undefined) {
 
 function validateEnv() {
   const required = [
-    'MONGO_URI'
+    'MONGO_URI',
+    'GROQ_API_KEY',
+    'SERP_API_KEY'
   ];
 
   const missing = required.filter(key => !process.env[key]);
@@ -30,6 +32,12 @@ export const env = {
   PORT: parseInt(getEnvVar('PORT', '3000')),
   
   MONGO_URI: getEnvVar('MONGO_URI'),
+  
+  REDIS_HOST: getEnvVar('REDIS_HOST', 'localhost'),
+  REDIS_PORT: parseInt(getEnvVar('REDIS_PORT', '6379')),
+  
+  GROQ_API_KEY: getEnvVar('GROQ_API_KEY'),
+  SERP_API_KEY: getEnvVar('SERP_API_KEY'),
   
   ALLOWED_ORIGINS: getEnvVar('ALLOWED_ORIGINS', 'http://localhost:3000'),
   LOG_LEVEL: getEnvVar('LOG_LEVEL', 'info'),
