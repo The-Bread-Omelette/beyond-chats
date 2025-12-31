@@ -1,0 +1,193 @@
+import { useState } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Box, Tooltip, Typography, IconButton, useTheme, useMediaQuery, Drawer } from '@mui/material';
+import {
+    DashboardRounded,
+    ViewListRounded,
+    ShowChartRounded,
+    SettingsRounded,
+    AutoAwesome,
+    MenuOpenRounded,
+    MenuRounded,
+} from '@mui/icons-material';
+
+const NAV_ITEMS = [
+    { id: 'home', label: 'Dashboard', path: '/', icon: DashboardRounded },
+    { id: 'queue', label: 'Queue Status', path: '/queue', icon: ViewListRounded },
+    // { id: 'compare', label: 'Comparison', path: '/compare/latest', icon: ShowChartRounded }, // Example
+];
+
+const ActionDock = () => {
+    const [expanded, setExpanded] = useState(false);
+    const location = useLocation();
+    const navigate = useNavigate();
+    const theme = useTheme();
+    const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+    const [mobileOpen, setMobileOpen] = useState(false);
+
+    const handleDrawerToggle = () => {
+        setMobileOpen(!mobileOpen);
+    };
+
+    const NavContent = () => (
+        <Box
+            sx={{
+                height: '100%',
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: expanded && !isMobile ? 'flex-start' : 'center',
+                padding: '24px 0',
+                background: 'rgba(10, 10, 15, 0.95)', // Darker background for mobile drawer
+                backdropFilter: 'blur(20px)',
+            }}
+        >
+            {/* Brand / Toggle */}
+            <Box
+                sx={{
+                    mb: 6,
+                    px: expanded && !isMobile ? 3 : 0,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: expanded && !isMobile ? 'space-between' : 'center',
+                    width: '100%',
+                    height: 48,
+                }}
+            >
+                <Box sx={{ width: 32, height: 32, borderRadius: 8, background: 'linear-gradient(135deg, #3B82F6, #2563EB)' }} />
+                {expanded && !isMobile && (
+                    <Typography variant="h6" sx={{ color: 'white', fontWeight: 700, letterSpacing: '0.05em', ml: 2 }}>
+                        BEYOND<span style={{ color: '#3B82F6' }}>CHATS</span>
+                    </Typography>
+                )}
+            </Box>
+
+            {/* Nav Items */}
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, width: '100%', px: 2 }}>
+                {NAV_ITEMS.map((item) => {
+                    const isActive = location.pathname === item.path;
+                    const Icon = item.icon;
+
+                    return (
+                        <Tooltip key={item.id} title={!expanded && !isMobile ? item.label : ''} placement="right" arrow>
+                            <Box
+                                component={motion.div}
+                                onClick={() => {
+                                    navigate(item.path);
+                                    if (isMobile) setMobileOpen(false);
+                                }}
+                                whileHover={{ scale: 1.02, x: 4 }}
+                            <Box
+                                sx={{
+                                    height: '100%',
+                                    display: 'flex',
+                                    flexDirection: 'column',
+                                    alignItems: expanded && !isMobile ? 'flex-start' : 'center',
+                                    padding: '20px 0',
+                                    background: 'linear-gradient(180deg, rgba(8,8,10,0.9), rgba(10,10,14,0.88))',
+                                    backdropFilter: 'blur(8px)',
+                                }}
+                            >
+                                    background: isActive ? 'rgba(59, 130, 246, 0.1)' : 'transparent',
+                                <Box sx={{ width: 36, height: 36, borderRadius: 8, background: 'linear-gradient(135deg, #3B82F6, #10B981)', boxShadow: '0 6px 18px rgba(2,6,23,0.5)' }} />
+                                    transition: 'background 0.2s, color 0.2s',
+                                    '&:hover': {
+                                        color: 'white',
+                                        background: isActive ? 'rgba(59, 130, 246, 0.15)' : 'rgba(255, 255, 255, 0.03)',
+                                    },
+                                }}
+                            >
+                                {isActive && (
+                                    <motion.div
+                                        layoutId="activeIndicator"
+                                        style={{
+                                            position: 'absolute',
+                                            left: 0,
+                                            top: 8,
+                                            bottom: 8,
+                                            width: 3,
+                                            backgroundColor: '#3B82F6',
+                                            borderRadius: '0 4px 4px 0',
+                                        }}
+                                    />
+                                )}
+
+                                <Box
+                                    sx={{
+                                        minWidth: 48,
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                    }}
+                                >
+                                    <Icon sx={{ fontSize: 22, color: isActive ? '#3B82F6' : 'inherit' }} />
+                                </Box>
+                                                    background: isActive ? 'linear-gradient(90deg, rgba(59,130,246,0.08), rgba(16,185,129,0.03))' : 'transparent',
+                                {(expanded || isMobile) && (
+                                    <Typography variant="body2" fontWeight={500} sx={{ whiteSpace: 'nowrap', ml: isMobile ? 2 : 0 }}>
+                                        {item.label}
+                                    </Typography>
+                                )}
+                            </Box>
+                        </Tooltip>
+                    );
+                })}
+            </Box>
+        </Box>
+    );
+
+    if (isMobile) {
+        return (
+            <>
+                <IconButton
+                    color="inherit"
+                    aria-label="open drawer"
+                    edge="start"
+                    onClick={handleDrawerToggle}
+                    sx={{ mr: 2, display: { sm: 'none' }, position: 'fixed', top: 16, left: 16, zIndex: 1300, bgcolor: 'rgba(0,0,0,0.5)' }}
+                >
+                    <MenuRounded />
+                </IconButton>
+                <Drawer
+                    variant="temporary"
+                    open={mobileOpen}
+                    onClose={handleDrawerToggle}
+                    ModalProps={{
+                        keepMounted: true, // Better open performance on mobile.
+                    }}
+                    sx={{
+                        display: { xs: 'block', sm: 'none' },
+                        '& .MuiDrawer-paper': { boxSizing: 'border-box', width: 240, bgcolor: 'background.default' },
+                    }}
+                >
+                    <NavContent />
+                </Drawer>
+            </>
+        );
+    }
+
+    return (
+        <motion.div
+            initial={{ width: 80 }}
+            animate={{ width: expanded ? 240 : 80 }}
+            transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+            style={{
+                position: 'fixed',
+                left: 0,
+                top: 0,
+                height: '100vh',
+                zIndex: 1200,
+                background: 'rgba(10, 10, 15, 0.6)',
+                backdropFilter: 'blur(20px)',
+                borderRight: '1px solid rgba(255, 255, 255, 0.08)',
+                overflow: 'hidden',
+            }}
+            onMouseEnter={() => setExpanded(true)}
+            onMouseLeave={() => setExpanded(false)}
+        >
+            <NavContent />
+        </motion.div>
+    );
+};
+
+export default ActionDock;
