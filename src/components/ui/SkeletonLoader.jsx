@@ -1,32 +1,43 @@
-import { motion } from 'framer-motion';
 import { Box, Skeleton } from '@mui/material';
 
 const SkeletonCard = () => (
-  <motion.div
-    initial={{ opacity: 0 }}
-    animate={{ opacity: 1 }}
-    exit={{ opacity: 0 }}
+  <Box
+    sx={{
+      p: 3,
+      borderRadius: 3,
+      bgcolor: 'rgba(255,255,255,0.02)',
+      border: '1px solid rgba(255,255,255,0.05)',
+      height: '100%',
+    }}
   >
-    <Box
-      sx={{
-        p: 2,
-        border: '1px solid',
-        borderColor: 'divider',
-        borderRadius: 1.5,
-      }}
-    >
-      <Skeleton variant="rectangular" height={120} sx={{ mb: 2, borderRadius: 1 }} />
-      <Skeleton width="60%" height={24} sx={{ mb: 1 }} />
-      <Skeleton width="40%" height={20} />
+    <Skeleton
+      variant="text"
+      width="40%"
+      height={24}
+      sx={{ mb: 2, bgcolor: 'rgba(255,255,255,0.05)' }}
+    />
+    <Skeleton
+      variant="rectangular"
+      height={60}
+      sx={{ mb: 2, borderRadius: 1, bgcolor: 'rgba(255,255,255,0.05)' }}
+    />
+    <Skeleton
+      variant="text"
+      width="80%"
+      sx={{ bgcolor: 'rgba(255,255,255,0.05)' }}
+    />
+    <Box sx={{ mt: 4, display: 'flex', gap: 2 }}>
+      <Skeleton variant="rounded" width={80} height={32} sx={{ bgcolor: 'rgba(255,255,255,0.05)' }} />
+      <Skeleton variant="rounded" width={32} height={32} sx={{ bgcolor: 'rgba(255,255,255,0.05)' }} />
     </Box>
-  </motion.div>
+  </Box>
 );
 
 export const SkeletonGrid = ({ count = 6 }) => (
   <Box
     sx={{
       display: 'grid',
-      gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))',
+      gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))',
       gap: 3,
     }}
   >

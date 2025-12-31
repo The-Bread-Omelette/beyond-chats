@@ -23,6 +23,7 @@ import { useArticle } from '../hooks/useArticles';
 import { LoadingSpinner } from '../components/common/LoadingSpinner';
 import { ErrorMessage } from '../components/common/ErrorMessage';
 import PageTransition from '../components/ui/PageTransition';
+import VersionCompare from '../components/compare/VersionCompare';
 
 const ComparisonPage = () => {
   const { id } = useParams();
@@ -71,120 +72,7 @@ const ComparisonPage = () => {
           </Box>
         </motion.div>
 
-        <Box
-          sx={{
-            display: 'grid',
-            gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' },
-            gap: 3,
-          }}
-        >
-          {/* Original */}
-          <motion.div
-            initial={{ opacity: 0, x: -30 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.1 }}
-          >
-            <Paper
-              elevation={0}
-              sx={{
-                border: '2px solid',
-                borderColor: 'divider',
-                height: '100%',
-                display: 'flex',
-                flexDirection: 'column',
-              }}
-            >
-              <Box
-                sx={{
-                  p: 2,
-                  bgcolor: '#fafafa',
-                  borderBottom: '1px solid',
-                  borderColor: 'divider',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
-                }}
-              >
-                <Typography variant="h6" sx={{ fontWeight: 600 }}>
-                  Original Content
-                </Typography>
-                <Tooltip title={copied.original ? 'Copied!' : 'Copy content'}>
-                  <IconButton
-                    size="small"
-                    onClick={() => handleCopy(article.excerpt || '', 'original')}
-                  >
-                    {copied.original ? <Check color="success" /> : <ContentCopy />}
-                  </IconButton>
-                </Tooltip>
-              </Box>
-              
-              <Box sx={{ p: 3, flexGrow: 1, overflow: 'auto' }}>
-                <Typography variant="body1" sx={{ whiteSpace: 'pre-wrap', lineHeight: 1.8 }}>
-                  {article.excerpt}
-                </Typography>
-              </Box>
-            </Paper>
-          </motion.div>
-
-          {/* Enhanced */}
-          <motion.div
-            initial={{ opacity: 0, x: 30 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.2 }}
-          >
-            <Paper
-              elevation={0}
-              sx={{
-                border: '2px solid',
-                borderColor: 'success.main',
-                height: '100%',
-                display: 'flex',
-                flexDirection: 'column',
-              }}
-            >
-              <Box
-                sx={{
-                  p: 2,
-                  bgcolor: 'success.main',
-                  color: 'white',
-                  borderBottom: '1px solid',
-                  borderColor: 'success.dark',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
-                }}
-              >
-                <Typography variant="h6" sx={{ fontWeight: 600 }}>
-                  Enhanced Content
-                </Typography>
-                <Tooltip title={copied.enhanced ? 'Copied!' : 'Copy content'}>
-                  <IconButton
-                    size="small"
-                    onClick={() => handleCopy(article.content || '', 'enhanced')}
-                    sx={{ color: 'white' }}
-                  >
-                    {copied.enhanced ? <Check /> : <ContentCopy />}
-                  </IconButton>
-                </Tooltip>
-              </Box>
-              
-              <Box sx={{ p: 3, flexGrow: 1, overflow: 'auto' }}>
-                <ReactMarkdown
-                  remarkPlugins={[remarkGfm]}
-                  components={{
-                    p: ({ children }) => (
-                      <Typography variant="body1" paragraph sx={{ lineHeight: 1.8 }}>
-                        {children}
-                      </Typography>
-                    ),
-                  }}
-                >
-                  {article.content}
-                </ReactMarkdown>
-              </Box>
-            </Paper>
-          </motion.div>
-        </Box>
+        <VersionCompare original={article.excerpt || ''} enhanced={article.content || ''} />
 
         {/* Stats */}
         <motion.div

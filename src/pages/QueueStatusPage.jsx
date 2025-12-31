@@ -3,21 +3,19 @@ import { motion } from 'framer-motion';
 import {
   Box,
   Typography,
-  Paper,
   Grid,
   LinearProgress,
   Button,
 } from '@mui/material';
 import {
-  Refresh,
-  Schedule,
-  Loop,
-  CheckCircle,
-  Error as ErrorIcon,
+  RefreshRounded,
+  ScheduleRounded,
+  AutorenewRounded,
+  CheckCircleRounded,
+  ErrorRounded,
 } from '@mui/icons-material';
 import { articleApi } from '../api/endpoints/articles';
 import PageTransition from '../components/ui/PageTransition';
-import { fadeInUp } from '../utils/motionVariants';
 import { useToast } from '../components/ui/ToastProvider';
 
 const QueueStatsPage = () => {
@@ -32,7 +30,7 @@ const QueueStatsPage = () => {
       setStats(response.data);
     } catch (err) {
       console.error('Failed to fetch stats:', err);
-      show('Failed to load queue statistics', { severity: 'error', action: { label: 'Retry', onClick: fetchStats } });
+      show('Failed to load queue statistics', { severity: 'error' });
     } finally {
       setLoading(false);
     }
@@ -45,37 +43,43 @@ const QueueStatsPage = () => {
   }, []);
 
   const statCards = [
-    { label: 'Waiting', value: stats?.waiting || 0, color: '#ff991f', icon: Schedule },
-    { label: 'Active', value: stats?.active || 0, color: '#0052cc', icon: Loop },
-    { label: 'Completed', value: stats?.completed || 0, color: '#00875a', icon: CheckCircle },
-    { label: 'Failed', value: stats?.failed || 0, color: '#de350b', icon: ErrorIcon },
+    { label: 'Waiting', value: stats?.waiting || 0, color: '#F59E0B', icon: ScheduleRounded },
+    { label: 'Active Processing', value: stats?.active || 0, color: '#3B82F6', icon: AutorenewRounded },
+    { label: 'Completed', value: stats?.completed || 0, color: '#10B981', icon: CheckCircleRounded },
+    { label: 'Failed', value: stats?.failed || 0, color: '#EF4444', icon: ErrorRounded },
   ];
 
-  const totalJobs = (stats?.waiting || 0) + (stats?.active || 0);
-  const completionRate = stats?.completed
-    ? ((stats.completed / (stats.completed + stats.failed)) * 100).toFixed(1)
+  const totalJobs = (stats?.waiting || 0) + (stats?.active || 0) + (stats?.completed || 0) + (stats?.failed || 0);
+  const completionRate = stats?.completed && totalJobs > 0
+    ? ((stats.completed / totalJobs) * 100).toFixed(1)
     : 0;
 
   return (
     <PageTransition>
-      <Box>
-        <motion.div variants={fadeInUp} initial="initial" animate="animate">
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4 }}>
-            <Typography variant="h4" sx={{ fontWeight: 700 }}>
-              Queue Statistics
+      <Box sx={{ maxWidth: 1200, mx: 'auto' }}>
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', mb: 6 }}>
+          <Box>
+            <Typography variant="caption" color="primary" fontWeight={600} letterSpacing={1} sx={{ mb: 1, display: 'block' }}>
+              SYSTEM STATUS
             </Typography>
-            <Button
-              variant="outlined"
-              startIcon={<Refresh />}
-              onClick={fetchStats}
-              disabled={loading}
-            >
-              Refresh
-            </Button>
+            <Typography variant="h2" sx={{ fontWeight: 700, mb: 1 }}>
+              Queue Activity
+            </Typography>
+            <Typography variant="body1" color="text.secondary">
+              Real-time monitoring of enhancement jobs.
+            </Typography>
           </Box>
-        </motion.div>
+          <Button
+            variant="outlined"
+            startIcon={<RefreshRounded />}
+            onClick={fetchStats}
+            disabled={loading}
+          >
+            Refresh Data
+          </Button>
+        </Box>
 
-        <Grid container spacing={3}>
+        <Grid container spacing={3} sx={{ mb: 6 }}>
           {statCards.map((stat, index) => {
             const Icon = stat.icon;
             return (
@@ -83,59 +87,71 @@ const QueueStatsPage = () => {
                 <motion.div
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: index * 0.08 }}
+                  transition={{ delay: index * 0.1 }}
                 >
-                  <Paper sx={{ p: 2, height: '100%' }} elevation={2}>
-                    <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                      <Icon sx={{ fontSize: 40, color: stat.color, mr: 2 }} />
+                  <Box
+                    sx={{
+                      p: 3,
+                      borderRadius: 3,
+                      bgcolor: 'rgba(255,255,255,0.02)',
+                      border: '1px solid rgba(255,255,255,0.05)',
+                      height: '100%',
+                      position: 'relative',
+                      overflow: 'hidden',
+                    }}
+                  >
+                    <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
+                      <Box sx={{ p: 1, borderRadius: 1.5, bgcolor: `${stat.color}15`, mr: 2 }}>
+                        <Icon sx={{ fontSize: 24, color: stat.color }} />
+                      </Box>
                       <Box>
-                        <Typography variant="subtitle2" sx={{ color: 'text.secondary' }}>
+                        <Typography variant="body2" color="text.secondary">
                           {stat.label}
                         </Typography>
-                        <Typography variant="h5" sx={{ fontWeight: 700 }}>
+                        <Typography variant="h4" fontWeight={700}>
                           {stat.value}
                         </Typography>
                       </Box>
                     </Box>
 
-                    <Box sx={{ mt: 2 }}>
-                      <LinearProgress
-                        variant="determinate"
-                        value={totalJobs ? (stat.value / Math.max(1, totalJobs)) * 100 : 0}
-                        sx={{ height: 8, borderRadius: 1 }}
-                      />
-                    </Box>
-                  </Paper>
+                    <LinearProgress
+                      variant="determinate"
+                      value={totalJobs ? (stat.value / Math.max(1, totalJobs)) * 100 : 0}
+                      sx={{
+                        height: 4,
+                        borderRadius: 2,
+                        bgcolor: 'rgba(255,255,255,0.05)',
+                        '& .MuiLinearProgress-bar': { bgcolor: stat.color }
+                      }}
+                    />
+                  </Box>
                 </motion.div>
               </Grid>
             );
           })}
         </Grid>
 
-        <Box sx={{ mt: 4, display: 'flex', gap: 3, alignItems: 'center' }}>
-          <Paper sx={{ p: 2, flex: '1 1 320px' }} elevation={1}>
-            <Typography variant="subtitle2" sx={{ color: 'text.secondary' }}>
-              Total Jobs
-            </Typography>
-            <Typography variant="h4" sx={{ fontWeight: 700 }}>
-              {totalJobs}
-            </Typography>
-          </Paper>
-
-          <Paper sx={{ p: 2, width: 220 }} elevation={1}>
-            <Typography variant="subtitle2" sx={{ color: 'text.secondary' }}>
-              Completion Rate
-            </Typography>
-            <Typography variant="h4" sx={{ fontWeight: 700 }}>
-              {completionRate}%
-            </Typography>
-            <LinearProgress
-              variant="determinate"
-              value={Number(completionRate) || 0}
-              sx={{ mt: 2, height: 8, borderRadius: 1 }}
-            />
-          </Paper>
-        </Box>
+        {/* Aggregates */}
+        <Grid container spacing={3}>
+          <Grid item xs={12} md={8}>
+            <Box sx={{ p: 4, borderRadius: 3, bgcolor: 'background.paper', border: '1px solid', borderColor: 'divider' }}>
+              <Typography variant="h6" gutterBottom>Total Throughput</Typography>
+              <Typography variant="h3" fontWeight={700} color="primary">{totalJobs}</Typography>
+              <Typography variant="body2" color="text.secondary">Jobs processed in current session</Typography>
+            </Box>
+          </Grid>
+          <Grid item xs={12} md={4}>
+            <Box sx={{ p: 4, borderRadius: 3, bgcolor: 'background.paper', border: '1px solid', borderColor: 'divider' }}>
+              <Typography variant="h6" gutterBottom>Success Rate</Typography>
+              <Typography variant="h3" fontWeight={700} color="success.main">{completionRate}%</Typography>
+              <LinearProgress
+                variant="determinate"
+                value={Number(completionRate)}
+                sx={{ mt: 2, height: 6, borderRadius: 3, bgcolor: 'rgba(255,255,255,0.05)', '& .MuiLinearProgress-bar': { bgcolor: '#10B981' } }}
+              />
+            </Box>
+          </Grid>
+        </Grid>
 
       </Box>
     </PageTransition>

@@ -6,6 +6,9 @@ import {
   Typography,
   Button,
   Box,
+  IconButton,
+  Avatar,
+  Tooltip,
 } from '@mui/material';
 import { Link } from 'react-router-dom';
 
@@ -50,16 +53,19 @@ const Header = () => {
 
         <Box sx={{ flexGrow: 1 }} />
 
-        <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-          <Button
-            variant="contained"
-            component={Link}
-            to="/"
-            sx={{ ml: 2 }}
-          >
-            Articles
-          </Button>
-        </motion.div>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+            <Button variant="outlined" component={Link} to="/" sx={{ ml: 1 }}>
+              Articles
+            </Button>
+          </motion.div>
+
+          <Tooltip title="Account">
+            <IconButton size="small" sx={{ ml: 1 }}>
+              <Avatar sx={{ width: 32, height: 32, bgcolor: 'primary.main', fontSize: 14 }}>BC</Avatar>
+            </IconButton>
+          </Tooltip>
+        </Box>
       </Toolbar>
     </AppBar>
   );

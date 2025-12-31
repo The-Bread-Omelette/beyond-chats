@@ -1,92 +1,86 @@
-import { motion } from 'framer-motion';
-import { itemVariants } from '../ui/AnimatedList';
-import { Box, Paper, Typography, Grid } from '@mui/material';
+import { useEffect, useState } from 'react';
+import { motion, useSpring, useTransform } from 'framer-motion';
+import { Box, Typography, Grid } from '@mui/material';
 import {
-  Article,
-  AutoAwesome,
-  CheckCircle,
-  Schedule,
-  Error as ErrorIcon,
+  DescriptionRounded,
+  ScheduleRounded,
+  CheckCircleRounded,
+  ErrorRounded,
 } from '@mui/icons-material';
-import { fadeInUp, staggerContainer } from '../../utils/motionVariants';
-import { useInView } from 'react-intersection-observer';
+
+const AnimatedCounter = ({ value }) => {
+  const spring = useSpring(0, { mass: 0.8, stiffness: 75, damping: 15 });
+  const display = useTransform(spring, (current) => Math.round(current));
+
+  useEffect(() => {
+    spring.set(value);
+  }, [value, spring]);
+
+  return <motion.span>{display}</motion.span>;
+};
 
 const StatCard = ({ icon: Icon, label, value, color, delay }) => {
-  const [ref, inView] = useInView({
-    triggerOnce: true,
-    threshold: 0.1,
-  });
-
   return (
-    <motion.div ref={ref} variants={itemVariants} initial="hidden" animate={inView ? 'show' : 'hidden'} transition={{ delay }}>
-      <Paper
-        elevation={0}
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.4, delay }}
+      whileHover={{ y: -5 }}
+    >
+      <Box
         sx={{
           p: 3,
-          border: '1px solid',
-          borderColor: 'divider',
+          height: '100%',
+          borderRadius: 3,
           position: 'relative',
           overflow: 'hidden',
-          transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+          background: 'rgba(20, 20, 25, 0.4)', // Base dark
+          backdropFilter: 'blur(10px)',
+          border: '1px solid rgba(255, 255, 255, 0.05)',
+          transition: 'border-color 0.3s',
           '&:hover': {
             borderColor: color,
-            transform: 'translateY(-4px)',
-            boxShadow: `0 8px 24px ${color}15`,
-          },
+            bgcolor: 'rgba(255,255,255,0.03)',
+            transform: 'translateY(-2px)',
+            boxShadow: `0 4px 20px -8px ${color}40`, // Subtle colored shadow instead of glow
+          }
         }}
       >
-        <Box
-          sx={{
-            position: 'absolute',
-            top: -10,
-            right: -10,
-            width: 100,
-            height: 100,
-            background: `radial-gradient(circle, ${color}15 0%, transparent 70%)`,
-          }}
-        />
-        
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 1 }}>
+        <Box sx={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', mb: 2 }}>
           <Box
             sx={{
               p: 1.5,
               borderRadius: 2,
-              bgcolor: `${color}10`,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
+              bgcolor: 'rgba(255,255,255,0.03)',
+              border: '1px solid rgba(255,255,255,0.05)',
+              display: 'flex'
             }}
           >
-            <Icon sx={{ color, fontSize: 28 }} />
+            <Icon sx={{ color: color, fontSize: 24 }} />
           </Box>
-          
-          <Box>
-            <Typography variant="body2" color="text.secondary" sx={{ mb: 0.5 }}>
-              {label}
-            </Typography>
-            <motion.div
-              initial={{ scale: 0 }}
-              animate={inView ? { scale: 1 } : {}}
-              transition={{ duration: 0.5, delay: delay + 0.2 }}
-            >
-              <Typography variant="h4" sx={{ fontWeight: 700 }}>
-                {value}
-              </Typography>
-            </motion.div>
-          </Box>
+          {/* Trend Indicator could go here */}
         </Box>
-      </Paper>
+
+        <Box>
+          <Typography variant="body2" sx={{ color: 'text.secondary', fontWeight: 500, mb: 0.5 }}>
+            {label}
+          </Typography>
+          <Typography variant="h3" sx={{ fontWeight: 700, color: 'white' }}>
+            <AnimatedCounter value={value} />
+          </Typography>
+        </Box>
+      </Box>
     </motion.div>
   );
 };
 
-const StatsCards = ({ articles, loading }) => {
+const StatsCards = ({ articles = [], loading }) => {
   if (loading) return null;
 
   const stats = {
     total: articles.length,
     pending: articles.filter(a => a.enhancementStatus === 'pending').length,
-    completed: articles.filter(a => a.enhancementStatus === 'completed').length,
+    completed: articles.filter(a => ['completed', 'enhanced'].includes(a.enhancementStatus?.toLowerCase())).length,
     failed: articles.filter(a => a.enhancementStatus === 'failed').length,
   };
 
@@ -95,37 +89,37 @@ const StatsCards = ({ articles, loading }) => {
       <Grid container spacing={3}>
         <Grid item xs={12} sm={6} md={3}>
           <StatCard
-            icon={Article}
+            icon={DescriptionRounded}
             label="Total Articles"
             value={stats.total}
-            color="#0052cc"
+            color="#3B82F6"
             delay={0}
           />
         </Grid>
         <Grid item xs={12} sm={6} md={3}>
           <StatCard
-            icon={Schedule}
-            label="Pending"
+            icon={ScheduleRounded}
+            label="Pending Processing"
             value={stats.pending}
-            color="#ff991f"
+            color="#F59E0B"
             delay={0.1}
           />
         </Grid>
         <Grid item xs={12} sm={6} md={3}>
           <StatCard
-            icon={CheckCircle}
-            label="Enhanced"
+            icon={CheckCircleRounded}
+            label="Successfully Enhanced"
             value={stats.completed}
-            color="#00875a"
+            color="#10B981"
             delay={0.2}
           />
         </Grid>
         <Grid item xs={12} sm={6} md={3}>
           <StatCard
-            icon={ErrorIcon}
-            label="Failed"
+            icon={ErrorRounded}
+            label="Failed Attempts"
             value={stats.failed}
-            color="#de350b"
+            color="#EF4444"
             delay={0.3}
           />
         </Grid>
