@@ -9,7 +9,13 @@ const ArticleContent = ({ article, activeTab, onTabChange }) => {
   const preprocessOriginal = (text) => {
     if (!text) return '';
     let s = String(text);
-    s = s.replace(/\r\n/g, '\n');
+
+    s = s.replace(
+      /!\[([^\]]*)\]\(\s*http:\/\/13\.233\.55\.201([^)]*)\)/gi,
+      '![\$1](https://beyondchats.com$2)'
+    );
+
+    s = s.replace(/\r\n/g, '');
     s = s.replace(/\t/g, ' ');
     s = s.replace(/\u00A0/g, ' ');
 
