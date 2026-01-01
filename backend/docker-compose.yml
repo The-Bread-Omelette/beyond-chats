@@ -1,19 +1,23 @@
 services:
   mongodb:
     image: mongo:7.0
+    container_name: backend-mongodb
+    ports:
+      - "27017:27017"
     volumes:
       - mongodb_data:/data/db
     environment:
       MONGO_INITDB_DATABASE: beyondchats
+    restart: unless-stopped
 
   redis:
     image: redis:7-alpine
+    container_name: backend-redis
+    ports:
+      - "6379:6379"
     volumes:
       - redis_data:/data
-    # By default docker-compose brings up a local redis service. If you prefer
-    # to use an external/managed Redis, set REDIS_HOST in your environment
-    # (for example: REDIS_HOST=your-redis-host). The app will fall back to
-    # connecting to the 'redis' service when REDIS_HOST is not set.
+    restart: unless-stopped
 
 volumes:
   mongodb_data:

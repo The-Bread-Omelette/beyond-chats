@@ -49,6 +49,7 @@ const ArticleDetailPage = () => {
   const { show } = useToast();
   const [activeTab, setActiveTab] = useState(0);
   const [copied, setCopied] = useState(false);
+  const [waitingEnhancement, setWaitingEnhancement] = useState(false);
 
   const { scrollYProgress } = useScroll();
   const progressWidth = useTransform(scrollYProgress, [0, 1], ['0%', '100%']);
@@ -61,12 +62,45 @@ const ArticleDetailPage = () => {
 
   const handleEnhance = async (articleId) => {
     try {
+      // enqueue enhancement
       await enhanceArticle(articleId || id);
-      show('Article queued for enhancement', { severity: 'success' });
-      setTimeout(() => refetch(), 800);
+      show('Article queued for enhancement', { severity: 'info' });
+
+      // start polling for completion
+      setWaitingEnhancement(true);
+      const start = Date.now();
+      const timeout = 60 * 1000; // 60s
+
+      while (Date.now() - start < timeout) {
+        // eslint-disable-next-line no-await-in-loop
+        const statusResp = await (await import('../api/endpoints/articles')).articleApi.getEnhancementStatus(articleId || id);
+        const status = statusResp?.data?.enhancementStatus || statusResp?.enhancementStatus;
+        if (status === 'completed') {
+          show('Enhancement completed', { severity: 'success' });
+          await refetch();
+          setActiveTab(1);
+          setWaitingEnhancement(false);
+          return;
+        }
+        if (status === 'failed') {
+          show('Enhancement failed', { severity: 'error' });
+          await refetch();
+          setWaitingEnhancement(false);
+          return;
+        }
+        // wait 1s before next poll
+        // eslint-disable-next-line no-await-in-loop
+        await new Promise(r => setTimeout(r, 1000));
+      }
+
+      // timed out
+      show('Enhancement queued — still processing in background', { severity: 'info' });
+      setWaitingEnhancement(false);
+      setTimeout(() => refetch(), 1500);
     } catch (err) {
       console.error('Enhancement failed:', err);
       show('Enhancement failed', { severity: 'error' });
+      setWaitingEnhancement(false);
     }
   };
 
@@ -104,7 +138,12 @@ const ArticleDetailPage = () => {
 
 
         <motion.div variants={fadeInUp} initial="initial" animate="animate" transition={{ delay: 0.1 }}>
-          <ArticleHeader article={article} onEnhance={handleEnhance} onCompare={(aid) => navigate(`/compare/${aid || id}`)} isEnhancing={isEnhancing ? isEnhancing(id) : false} />
+          <ArticleHeader
+            article={article}
+            onEnhance={handleEnhance}
+            onCompare={(aid) => navigate(`/compare/${aid || id}`)}
+            isEnhancing={ (isEnhancing ? isEnhancing(id) : false) || waitingEnhancement }
+          />
         </motion.div>
 
         <Divider sx={{ my: 4 }} />
@@ -115,7 +154,7 @@ const ArticleDetailPage = () => {
         </motion.div>
 
         <Box sx={{ mt: 3 }}>
-          <ReferencesList references={article.references} />
+          <ReferencesList originalSource={{ title: 'BeyondChats (Original)', url: article.url }} references={article.references} />
         </Box>
       </Box>
     </PageTransition>

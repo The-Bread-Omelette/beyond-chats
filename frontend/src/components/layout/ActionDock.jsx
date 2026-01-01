@@ -76,18 +76,23 @@ const ActionDock = () => {
                                     navigate(item.path);
                                     if (isMobile) setMobileOpen(false);
                                 }}
-                                whileHover={{ scale: 1.02, x: 4 }}
+                                whileHover={{ x: expanded || isMobile ? 4 : 0, scale: 1.015 }}
                                 whileTap={{ scale: 0.98 }}
                                 sx={{
                                     position: 'relative',
                                     display: 'flex',
                                     alignItems: 'center',
-                                    px: expanded || isMobile ? 2 : 1.5,
+                                    px: expanded || isMobile ? 2 : 0,
                                     py: 1.5,
                                     borderRadius: 2,
-                                    cursor: 'pointer',
-                                    color: isActive ? '#3B82F6' : 'rgba(255, 255, 255, 0.6)',
-                                    background: isActive ? 'rgba(59, 130, 246, 0.1)' : 'transparent',
+                                    cursor: 'pointer',color: isActive ? '#ffffff' : 'rgba(255, 255, 255, 0.6)',
+                                    background: isActive
+                                    ? 'linear-gradient(135deg, rgba(59,130,246,0.18), rgba(59,130,246,0.08))'
+                                    : 'transparent',
+                                    boxShadow: isActive
+                                    ? 'inset 0 0 0 1px rgba(59,130,246,0.25)'
+                                    : 'none',
+
                                     transition: 'all 0.2s ease',
                                     '&:hover': {
                                         color: 'white',
@@ -95,29 +100,17 @@ const ActionDock = () => {
                                     },
                                 }}
                             >
-                                {isActive && (
-                                    <motion.div
-                                        layoutId="activeIndicator"
-                                        style={{
-                                            position: 'absolute',
-                                            left: 0,
-                                            top: 8,
-                                            bottom: 8,
-                                            width: 3,
-                                            backgroundColor: '#3B82F6',
-                                            borderRadius: '0 4px 4px 0',
-                                        }}
-                                    />
-                                )}
 
                                 <Box
                                     sx={{
-                                        minWidth: 48,
+                                        width: expanded || isMobile ? 40 : '100%',
                                         display: 'flex',
                                         alignItems: 'center',
                                         justifyContent: 'center',
+                                        flexShrink: 0,
                                     }}
-                                >
+                                    >
+
                                     <Icon sx={{ fontSize: 22, color: isActive ? '#3B82F6' : 'inherit' }} />
                                 </Box>
 

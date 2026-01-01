@@ -24,7 +24,7 @@ const ArticleCard = ({ article, onView, onEnhance, onLocalEnhance, onRevert, isE
       component={motion.div}
       whileHover={{ y: -8 }}
       sx={{
-        height: '100%',
+        height: 460,
         display: 'flex',
         flexDirection: 'column',
         position: 'relative',
@@ -48,17 +48,28 @@ const ArticleCard = ({ article, onView, onEnhance, onLocalEnhance, onRevert, isE
         }
       }}
     >
-      <CardContent sx={{ flexGrow: 1, p: 3, display: 'flex', flexDirection: 'column' }}>
+      <CardContent
+        sx={{
+          p: 3,
+          height: '100%',
+          display: 'flex',
+          flexDirection: 'column'
+        }}
+      >
+
         <Stack
           direction="row"
           justifyContent="space-between"
           alignItems="center"
           mb={3}
         >
-          <StatusReveal
-            status={article.enhancementStatus}
-            meta={formatRelativeTime(article.updatedAt || article.createdAt)}
-          />
+          <Box sx={{ maxWidth: '70%' }}>
+            <StatusReveal
+              status={article.enhancementStatus}
+              meta={formatRelativeTime(article.updatedAt || article.createdAt)}
+            />
+          </Box>
+
         </Stack>
 
         <Box
@@ -135,7 +146,8 @@ const ArticleCard = ({ article, onView, onEnhance, onLocalEnhance, onRevert, isE
             mt: 'auto',
             borderTop: '1px solid',
             borderColor: 'divider',
-            alignItems: 'center'
+            alignItems: 'center',
+            minHeight: 48 
           }}
         >
           <Button

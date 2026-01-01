@@ -39,8 +39,7 @@ export async function processArticleEnhancement(articleId) {
       })
     );
 
-    const scrapedArticles = (await Promise.all(scrapePromises))
-      .filter(Boolean);
+    const scrapedArticles = (await Promise.all(scrapePromises)).filter(Boolean);
 
     if (scrapedArticles.length === 0) {
       throw new Error('Failed to scrape any competing articles');
@@ -51,30 +50,47 @@ export async function processArticleEnhancement(articleId) {
       sources: scrapedArticles.map(a => a.url)
     });
 
-    const { content, references } = await enhanceArticle(
-      article.toObject(),
-      scrapedArticles
-    );
+    // Ensure we only use the top 2 competing articles as references
+    const topTwo = scrapedArticles.slice(0, 2);
+
+    // Clean and persist original content if not already stored
+    function cleanText(s) {
+      if (!s) return '';
+      let str = String(s);
+      str = str.replace(/\r\n/g, '\n');
+      str = str.replace(/\u00A0/g, ' ');
+      str = str.replace(/\n{3,}/g, '\n\n');
+      str = str.replace(/[ \t]{2,}/g, ' ');
+      str = str.split('\n').map(l => l.trim()).join('\n');
+      str = str.replace(/\n{2,}/g, '\n\n').trim();
+      return str;
+    }
+
+    if (!article.originalContent) {
+      const cleaned = cleanText(article.content || article.excerpt || '');
+      await article.updateOne({ originalContent: cleaned });
+    }
+
+    const { content } = await enhanceArticle(article.toObject(), topTwo);
+
+    const referencesToSave = topTwo.map(c => ({ title: c.title, url: c.url }));
 
     await article.updateOne({
       content,
-      originalContent: article.originalContent || article.content, // Preserve original content
-      references,
+      originalContent: article.originalContent || article.content,
+      references: referencesToSave,
       enhancementStatus: 'completed',
       enhancedAt: new Date(),
       $unset: { enhancementError: 1 }
     });
 
-    logger.info(`Successfully enhanced article`, {
-      articleId,
-      title: article.title,
-      referencesCount: references.length
-    });
+    logger.info(`Successfully enhanced article`, { articleId, title: article.title, referencesCount: referencesToSave.length });
 
     return {
       success: true,
       articleId,
-      referencesCount: references.length
+      referencesCount: referencesToSave.length,
+      references: referencesToSave
     };
 
   } catch (error) {

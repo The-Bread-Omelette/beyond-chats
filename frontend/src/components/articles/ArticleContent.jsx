@@ -6,6 +6,105 @@ import { useState } from 'react';
 const ArticleContent = ({ article, activeTab, onTabChange }) => {
   const hasEnhancedContent = article.enhancementStatus === 'completed' && article.content;
 
+  const preprocessOriginal = (text) => {
+    if (!text) return '';
+    let s = String(text);
+    s = s.replace(/\r\n/g, '\n');
+    s = s.replace(/\t/g, ' ');
+    s = s.replace(/\u00A0/g, ' ');
+
+    // split, trim lines, remove lone numeric lines (e.g., stray '1')
+    const lines = s.split('\n').map(l => l.trim()).filter(l => l !== '' || true);
+    const cleaned = [];
+    for (const line of lines) {
+      if (/^\d+$/.test(line)) continue; // drop lines that are only digits
+      cleaned.push(line);
+    }
+
+    // collapse excessive blank lines
+    let joined = cleaned.join('\n');
+    joined = joined.replace(/\n{3,}/g, '\n\n');
+
+    // promote short ALL-CAPS lines or lines ending with ':' to markdown headings
+    joined = joined.split('\n').map(l => {
+      if (/^#{1,6}\s/.test(l)) return l;
+      const t = l.trim();
+      if (t.length > 0 && t.length < 80) {
+        if (t === t.toUpperCase() && /[A-Z]/.test(t)) {
+          return '## ' + t;
+        }
+        if (/:$/.test(t)) {
+          return '## ' + t.replace(/:$/, '');
+        }
+      }
+      return l;
+    }).join('\n');
+
+    return joined.trim();
+  };
+
+  const MarkdownWrapper = ({ children }) => (
+    <Box
+      sx={{
+        lineHeight: 1.9,
+        color: '#E6EEF8',
+        fontSize: '1.05rem',
+
+        '& h1, & h2, & h3': {
+          fontWeight: 700,
+          mt: 3,
+          mb: 1.5
+        },
+
+        '& p': {
+          mb: 2
+        },
+
+        '& strong': {
+          fontWeight: 700
+        },
+
+        '& ul, & ol': {
+          ml: 3,
+          mb: 2
+        },
+
+        '& a': {
+          color: '#60A5FA',
+          textDecoration: 'underline'
+        },
+
+        '& img': {
+          maxWidth: '100%',
+          width: '100%',
+          height: 'auto',
+          display: 'block',
+          margin: '24px auto',
+          objectFit: 'contain'
+        },
+
+        '& img:not([width])': {
+          maxWidth: 720
+        },
+
+        '& figure': {
+          maxWidth: '100%',
+          margin: '32px auto'
+        },
+
+        '& figcaption': {
+          fontSize: '0.85rem',
+          color: 'rgba(255,255,255,0.6)',
+          textAlign: 'center',
+          marginTop: 8
+        }
+      }}
+    >
+      {children}
+    </Box>
+  );
+
+
   return (
     <Box>
       {hasEnhancedContent ? (
@@ -34,22 +133,18 @@ const ArticleContent = ({ article, activeTab, onTabChange }) => {
 
           {activeTab === 0 && (
             <Box sx={{ p: 4, borderRadius: 3, bgcolor: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)' }}>
-              {/* 
-                  If we have originalContent, use it. 
-                  If not, and we are enhanced, fallback to excerpt.
-                  If NOT enhanced, article.content IS the original.
-               */}
-              <Typography variant="body1" sx={{ whiteSpace: 'pre-wrap', lineHeight: 1.8, color: 'text.secondary' }}>
-                {article.originalContent || (hasEnhancedContent ? article.excerpt : article.content) || 'No content available'}
-              </Typography>
+              <MarkdownWrapper>
+                <ReactMarkdown remarkPlugins={[remarkGfm]}>{preprocessOriginal(article.originalContent || (hasEnhancedContent ? article.excerpt : article.content) || 'No content available')}</ReactMarkdown>
+              </MarkdownWrapper>
             </Box>
           )}
 
           {activeTab === 1 && (
-            <Box className="markdown-content">
-              {/* We rely on global markdown styles or specific component styles */}
-              <Box sx={{ lineHeight: 1.8, color: '#E2E8F0', fontSize: '1.05rem' }}>
-                <ReactMarkdown remarkPlugins={[remarkGfm]}>{article.content}</ReactMarkdown>
+            <Box className="markdown-content" sx={{ p: 0 }}>
+              <Box sx={{ p: 4, borderRadius: 3, bgcolor: 'transparent' }}>
+                <MarkdownWrapper>
+                  <ReactMarkdown remarkPlugins={[remarkGfm]}>{article.content}</ReactMarkdown>
+                </MarkdownWrapper>
               </Box>
             </Box>
           )}
@@ -57,9 +152,11 @@ const ArticleContent = ({ article, activeTab, onTabChange }) => {
       ) : (
         <Box sx={{ p: 4, borderRadius: 3, bgcolor: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)' }}>
           <Typography variant="h6" gutterBottom color="text.secondary" fontWeight={500}>Original Content</Typography>
-          <Typography variant="body1" sx={{ whiteSpace: 'pre-wrap', lineHeight: 1.8, color: 'text.secondary' }}>
-            {article.originalContent || article.content || 'No content available'}
-          </Typography>
+          <Box sx={{ mt: 2 }}>
+            <MarkdownWrapper>
+              <ReactMarkdown remarkPlugins={[remarkGfm]}>{preprocessOriginal(article.originalContent || article.content || 'No content available')}</ReactMarkdown>
+            </MarkdownWrapper>
+          </Box>
         </Box>
       )}
     </Box>

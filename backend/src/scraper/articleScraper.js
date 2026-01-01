@@ -1,5 +1,6 @@
 import * as cheerio from 'cheerio';
 import client from '../utils/httpClient.js';
+import TurndownService from 'turndown';
 import Article from '../models/Article.js';
 import logger from '../utils/logger.js';
 
@@ -45,9 +46,9 @@ async function resolveLastPage() {
   }
 }
 
-async function scrapeArticleContent(url) {
+async function scrapeArticleContent(url, httpClient) {
   try {
-    const { data } = await client.get(url);
+    const { data } = await (httpClient || client).get(url);
     const $ = cheerio.load(data);
 
     const contentSelectors = [
@@ -60,6 +61,8 @@ async function scrapeArticleContent(url) {
     ];
 
     let content = '';
+    let contentHtml = '';
+    const turndown = new TurndownService({ headingStyle: 'atx' });
     
     for (const selector of contentSelectors) {
       const element = $(selector).first();
@@ -73,7 +76,14 @@ async function scrapeArticleContent(url) {
           'iframe, .advertisement'
         ).remove();
         
-        content = cloned.text().trim();
+        // preserve inner HTML and convert to markdown
+        contentHtml = cloned.html() || '';
+        try {
+          content = turndown.turndown(contentHtml).trim();
+        } catch (e) {
+          // fallback to text if turndown fails
+          content = cloned.text().trim();
+        }
         
         if (content.length > 200) {
           logger.debug(`Content extracted using selector: ${selector}`);
@@ -82,111 +92,146 @@ async function scrapeArticleContent(url) {
       }
     }
     
-    return content || null;
+    // normalize excessive blank lines
+    if (content) {
+      content = content.replace(/\r\n/g, '\n');
+      content = content.replace(/\n{3,}/g, '\n\n');
+      content = content.replace(/[ \t]{2,}/g, ' ');
+      content = content.trim();
+    }
+
+    // return both markdown and raw html for callers if needed
+    return content ? { markdown: content, html: contentHtml || null } : null;
   } catch (error) {
     logger.error(`Failed to scrape content from ${url}`, { error: error.message });
     return null;
   }
 }
 
-export default async function scrapeOldestArticles() {
+function cleanContent(text) {
+  if (!text) return text;
+  let s = String(text);
+  s = s.replace(/\r\n/g, '\n');
+  s = s.replace(/&nbsp;|\u00A0/g, ' ');
+  s = s.replace(/(.)\1{3,}/g, '$1');
+  s = s.replace(/\n{3,}/g, '\n\n');
+  s = s.replace(/[ \t]{2,}/g, ' ');
+  s = s.replace(/[ \t]*\n[ \t]*/g, '\n');
+  s = s.trim();
+  s = s.replace(/\b([A-Z]{4,})\b/g, (m) => m.toLowerCase());
+  return s;
+}
+
+export default async function scrapeOldestArticles(customClient) {
   try {
     logger.info('Starting article scraping for oldest articles');
-    
+    const httpClient = customClient || client;
+
     const lastPageUrl = await resolveLastPage();
-    const { data } = await client.get(lastPageUrl);
-    const $ = cheerio.load(data);
 
-    // Get all articles on the last page
-    const articles = [];
-    
-    $('article').each((index, el) => {
-      const $article = $(el);
-      
-      // Try multiple selectors for title and link
-      const titleSelectors = [
-        'h2.entry-title a',
-        'h2 a',
-        '.entry-title a',
-        'h3 a',
-        'a[rel="bookmark"]'
-      ];
-      
-      let title = '';
-      let url = '';
-      
-      for (const selector of titleSelectors) {
-        const element = $article.find(selector).first();
-        if (element.length) {
-          title = element.text().trim();
-          url = element.attr('href');
-          if (title && url) break;
-        }
-      }
-      
-      // Get excerpt
-      const excerpt = $article.find('p').first().text().trim() ||
-                     $article.find('.entry-summary').text().trim() ||
-                     $article.find('.excerpt').text().trim();
-      
-      if (title && url) {
-        articles.push({ title, url, excerpt, index });
-      }
-    });
+    // Try to extract page number from last page URL
+    const pageMatch = /\/page\/(\d+)/i.exec(lastPageUrl || '');
+    let currentPage = pageMatch ? parseInt(pageMatch[1], 10) : 1;
 
-    logger.info(`Found ${articles.length} articles on last page`);
-
-    if (articles.length === 0) {
-      logger.warn('No articles found on last page');
-      return;
-    }
-
-    // Take the LAST 5 articles (oldest ones at the end of the page)
-    const oldestArticles = articles.slice(-5);
-    
-    logger.info(`Processing ${oldestArticles.length} oldest articles`);
-
+    const targetNew = 5;
     let scraped = 0;
     let skipped = 0;
 
-    for (const articleData of oldestArticles) {
-      try {
-        // Check if article already exists
-        const exists = await Article.exists({ url: articleData.url });
-        
-        if (exists) {
-          logger.info(`Article already exists: ${articleData.title}`);
-          skipped++;
-          continue;
-        }
-
-        // Scrape full content
-        const content = await scrapeArticleContent(articleData.url);
-
-        if (!content) {
-          logger.warn(`Could not scrape content for: ${articleData.title}`);
-          // Still save the article with excerpt only
-        }
-
-        await Article.create({
-          title: articleData.title,
-          url: articleData.url,
-          excerpt: articleData.excerpt,
-          content: content || articleData.excerpt
-        });
-
-        scraped++;
-        logger.info(`Successfully scraped article: ${articleData.title}`);
-        
-      } catch (error) {
-        logger.error(`Error processing article: ${articleData.title}`, { 
-          error: error.message 
-        });
+    // Helper to build a page URL for a given page number
+    const pageUrlFor = (baseUrl, pageNum) => {
+      if (!pageNum || pageNum <= 1) return BASE_URL;
+      if (/\/page\/(\d+)/i.test(baseUrl)) {
+        return baseUrl.replace(/\/page\/(\d+)/i, `/page/${pageNum}`);
       }
+      return `${BASE_URL}page/${pageNum}/`;
+    };
+
+    // Walk pages backwards (older pages) until we scraped `targetNew` new articles
+    while (scraped < targetNew && currentPage >= 1) {
+      const url = pageUrlFor(lastPageUrl, currentPage);
+      logger.info(`Fetching page ${currentPage}: ${url}`);
+
+      const { data } = await httpClient.get(url);
+      const $ = cheerio.load(data);
+
+      const articles = [];
+      $('article').each((index, el) => {
+        const $article = $(el);
+
+        const titleSelectors = [
+          'h2.entry-title a',
+          'h2 a',
+          '.entry-title a',
+          'h3 a',
+          'a[rel="bookmark"]'
+        ];
+
+        let title = '';
+        let url = '';
+
+        for (const selector of titleSelectors) {
+          const element = $article.find(selector).first();
+          if (element.length) {
+            title = element.text().trim();
+            url = element.attr('href');
+            if (title && url) break;
+          }
+        }
+
+        const excerpt = $article.find('p').first().text().trim() ||
+                       $article.find('.entry-summary').text().trim() ||
+                       $article.find('.excerpt').text().trim();
+
+        if (title && url) articles.push({ title, url, excerpt });
+      });
+
+      if (!articles.length) {
+        logger.warn(`No articles found on page ${currentPage}`);
+        currentPage -= 1;
+        continue;
+      }
+
+      // Process articles from oldest to newest (iterate from end)
+      for (let i = articles.length - 1; i >= 0 && scraped < targetNew; i--) {
+        const articleData = articles[i];
+        try {
+          const exists = await Article.exists({ url: articleData.url });
+          if (exists) {
+            logger.info(`Article already exists: ${articleData.title}`);
+            skipped++;
+            continue;
+          }
+
+          const scrapedContent = await scrapeArticleContent(articleData.url,httpClient);
+          const raw = scrapedContent
+            ? (scrapedContent.markdown || scrapedContent.html || articleData.excerpt)
+            : articleData.excerpt;
+          const cleaned = cleanContent(raw || '');
+          
+          scraped++;
+
+          await Article.create({
+            title: articleData.title,
+            url: articleData.url,
+            excerpt: articleData.excerpt,
+            content: cleaned || articleData.excerpt,
+            originalContent: cleaned || articleData.excerpt
+          });
+
+          scraped++;
+          logger.info(`Successfully scraped article: ${articleData.title}`);
+        } catch (error) {
+          logger.error(`Error processing article: ${articleData.title}`, {
+            error: error.message
+          });
+        }
+      }
+
+      currentPage -= 1;
     }
 
     logger.info(`Scraping completed: ${scraped} new articles, ${skipped} skipped`);
-    
+
     return {
       scraped,
       skipped,

@@ -40,6 +40,7 @@ const HomePage = () => {
   const { show } = useToast();
   const { articles, pagination, loading, error, refetch } = useArticles(params);
   const { enhanceArticle, enhanceAll, isEnhancing, enhancingAll } = useEnhancement();
+  const [scraping, setScraping] = useState(false);
 
   const handleView = (id) => navigate(`/article/${id}`);
 
@@ -151,15 +152,40 @@ const HomePage = () => {
           <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
             <Button
               variant="contained"
-              onClick={() => enhanceAll(10)}
+              onClick={async () => {
+                try {
+                  await enhanceAll(10);
+                  show('Enhancement queued for stack', { severity: 'success' });
+                  setTimeout(() => refetch(), 800);
+                } catch (err) {
+                  show('Auto-enhance failed', { severity: 'error' });
+                }
+              }}
               disabled={enhancingAll}
               size={isMobile ? 'medium' : 'large'}
               sx={{ height: 48, whiteSpace: 'nowrap' }}
             >
               {enhancingAll ? 'Processing stack...' : 'Auto-Enhance Stack'}
             </Button>
-            <Button variant="outlined" onClick={handleScrape} size={isMobile ? 'medium' : 'large'}>
-              Scrape Last Page
+            <Button
+              variant="outlined"
+              onClick={async () => {
+                try {
+                  setScraping(true);
+                  await articleApi.scrapeLastPage();
+                  show('Scrape started; new articles may be added', { severity: 'success' });
+                  setTimeout(() => refetch(), 1000);
+                } catch (err) {
+                  console.error(err);
+                  show('Scrape failed', { severity: 'error' });
+                } finally {
+                  setScraping(false);
+                }
+              }}
+              size={isMobile ? 'medium' : 'large'}
+              disabled={scraping}
+            >
+              {scraping ? 'Scraping...' : 'Scrape Last Page'}
             </Button>
             <Button variant="outlined" color="warning" onClick={handleClearAll}>
               Clear DB

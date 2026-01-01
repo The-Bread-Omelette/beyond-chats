@@ -8,11 +8,16 @@ const groq = new Groq({
 
 export async function enhanceArticle(original, competingArticles) {
   try {
-    const references = competingArticles
-      .map((c, i) => `[${i + 1}] ${c.title} - ${c.url}`)
-      .join('\n');
+    // Only include up to two competing articles in the prompt and references
+    const topTwo = (Array.isArray(competingArticles) ? competingArticles.slice(0, 2) : []).map(c => ({
+      title: c.title,
+      url: c.url,
+      textContent: c.textContent || c.content || ''
+    }));
 
-    const prompt = buildEnhancementPrompt(original, competingArticles, references);
+    const references = topTwo.map((c, i) => `[${i + 1}] ${c.title} - ${c.url}`).join('\n');
+
+    const prompt = buildEnhancementPrompt(original, topTwo, references);
 
     logger.info(`Enhancing article with Groq: ${original.title}`);
 
@@ -38,10 +43,7 @@ export async function enhanceArticle(original, competingArticles) {
 
     return {
       content: enhancedContent,
-      references: competingArticles.map(c => ({
-        title: c.title,
-        url: c.url
-      }))
+      references: topTwo.map(c => ({ title: c.title, url: c.url }))
     };
 
   } catch (error) {
