@@ -1,6 +1,7 @@
 import Article from '../../../models/Article.js';
 import { AppError } from '../../../middleware/errorHandler.js';
 import logger from '../../../utils/logger.js';
+import scrapeOldestArticles from '../../../scraper/articleScraper.js';
 
 export const createArticle = async (req, res, next) => {
   try {
@@ -126,6 +127,25 @@ export const deleteArticle = async (req, res, next) => {
       success: true,
       message: 'Article deleted successfully'
     });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const scrapeLastPage = async (req, res, next) => {
+  try {
+    const result = await scrapeOldestArticles();
+    res.json({ success: true, data: result });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const clearAllArticles = async (req, res, next) => {
+  try {
+    const deleted = await Article.deleteMany({});
+    logger.info('Cleared all articles', { deletedCount: deleted.deletedCount });
+    res.json({ success: true, deletedCount: deleted.deletedCount });
   } catch (error) {
     next(error);
   }

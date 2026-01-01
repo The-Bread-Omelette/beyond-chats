@@ -45,7 +45,7 @@ const ArticleDetailPage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const { article, loading, error, refetch } = useArticle(id);
-  const { enhanceArticle, enhancing } = useEnhancement();
+  const { enhanceArticle, isEnhancing } = useEnhancement();
   const { show } = useToast();
   const [activeTab, setActiveTab] = useState(0);
   const [copied, setCopied] = useState(false);
@@ -104,7 +104,7 @@ const ArticleDetailPage = () => {
 
 
         <motion.div variants={fadeInUp} initial="initial" animate="animate" transition={{ delay: 0.1 }}>
-          <ArticleHeader article={article} onEnhance={handleEnhance} onCompare={(aid) => navigate(`/compare/${aid || id}`)} />
+          <ArticleHeader article={article} onEnhance={handleEnhance} onCompare={(aid) => navigate(`/compare/${aid || id}`)} isEnhancing={isEnhancing ? isEnhancing(id) : false} />
         </motion.div>
 
         <Divider sx={{ my: 4 }} />

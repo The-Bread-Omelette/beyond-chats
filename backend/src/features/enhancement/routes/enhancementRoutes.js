@@ -3,6 +3,7 @@ import * as enhancementController from '../controllers/enhancementController.js'
 import { articleIdValidator } from '../../articles/validators/articleValidators.js';
 import { validateRequest } from '../../../middleware/validateRequest.js';
 import { enhancementLimiter } from '../../../middleware/rateLimiter.js';
+import { apiLimiter } from '../../../middleware/rateLimiter.js';
 
 const router = express.Router();
 
@@ -30,6 +31,20 @@ router.get(
 router.get(
   '/queue/stats',
   enhancementController.getQueueStats
+);
+
+router.post(
+  '/revert/:id',
+  enhancementLimiter,
+  articleIdValidator,
+  validateRequest,
+  enhancementController.revertEnhancement
+);
+
+router.post(
+  '/revert-all',
+  apiLimiter,
+  enhancementController.revertAllEnhancements
 );
 
 export default router;

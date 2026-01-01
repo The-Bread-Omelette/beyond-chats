@@ -7,13 +7,15 @@ import {
   Stack,
   IconButton,
   Tooltip,
+  Chip
 } from '@mui/material';
-import { AutoAwesome, ArrowForwardRounded } from '@mui/icons-material';
+import { AutoAwesome, ArrowForwardRounded, Edit } from '@mui/icons-material';
+import { CircularProgress } from '@mui/material';
 import { motion } from 'framer-motion';
 import StatusReveal from '../ui/StatusReveal';
 import { formatRelativeTime } from '../../utils/formatters';
 
-const ArticleCard = ({ article, onView, onEnhance }) => {
+const ArticleCard = ({ article, onView, onEnhance, onLocalEnhance, onRevert, isEnhancing }) => {
   const canEnhance = article.enhancementStatus === 'pending' || article.enhancementStatus === 'failed';
   const isEnhanced = article.enhancementStatus === 'completed';
 
@@ -148,24 +150,53 @@ const ArticleCard = ({ article, onView, onEnhance }) => {
           <Box sx={{ flexGrow: 1 }} />
 
           {canEnhance && (
-            <Tooltip title="Enhance with AI">
-              <IconButton
-                size="small"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onEnhance(article._id);
-                }}
-                sx={{
-                  color: '#F59E0B',
-                  bgcolor: 'rgba(245, 158, 11, 0.1)',
-                  '&:hover': {
-                    bgcolor: 'rgba(245, 158, 11, 0.2)',
-                  }
-                }}
-              >
-                <AutoAwesome fontSize="small" />
-              </IconButton>
+            <Tooltip title={isEnhancing ? 'Enhancing...' : 'Queue server enhancement'}>
+              <span>
+                <IconButton
+                  size="small"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onEnhance && onEnhance(article._id);
+                  }}
+                  sx={{
+                    color: '#F59E0B',
+                    bgcolor: 'rgba(245, 158, 11, 0.1)',
+                    '&:hover': {
+                      bgcolor: 'rgba(245, 158, 11, 0.2)',
+                    }
+                  }}
+                  disabled={Boolean(isEnhancing)}
+                >
+                  {isEnhancing ? <CircularProgress color="inherit" size={18} thickness={5} /> : <AutoAwesome fontSize="small" />}
+                </IconButton>
+              </span>
             </Tooltip>
+          )}
+
+          <Tooltip title={isEnhanced ? 'Edit enhancement' : 'Add enhancement'}>
+            <IconButton
+              size="small"
+              onClick={(e) => {
+                e.stopPropagation();
+                onLocalEnhance && onLocalEnhance(article._id);
+              }}
+              sx={{ color: isEnhanced ? '#10B981' : 'text.primary' }}
+            >
+              <Edit fontSize="small" />
+            </IconButton>
+          </Tooltip>
+
+          {article.enhancementStatus === 'completed' && (
+            <Button
+              size="small"
+              onClick={(e) => {
+                e.stopPropagation();
+                onRevert && onRevert(article._id);
+              }}
+              sx={{ ml: 1, textTransform: 'none' }}
+            >
+              Revert
+            </Button>
           )}
         </Box>
       </CardContent>

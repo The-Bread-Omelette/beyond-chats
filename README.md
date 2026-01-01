@@ -2,6 +2,8 @@
 
 This full-stack application scrapes articles from BeyondChats, enhances them using AI based on competing content from Google Search, and presents them in a premium, modern dashboard.
 
+## Live Link : [Link](https://beyond-chats-beryl.vercel.app/article/695618d65962c74f3cf1874c)
+
 ## Features
 
 -   **Deep Scraping**: Fetches the oldest articles from the BeyondChats blog.
@@ -44,12 +46,6 @@ npm install
 
 # Configure environment
 cp .env.example .env
-# Edit .env with your credentials:
-# PORT=3000
-# MONGODB_URI=mongodb://localhost:27017/beyondchats
-# GOOGLE_API_KEY=...
-# GOOGLE_SEARCH_ENGINE_ID=...
-# GEMINI_API_KEY=...
 
 # Start the server
 npm run dev
@@ -70,6 +66,66 @@ npm run dev
 The app will be available at `http://localhost:5173`.
 
 ---
+
+## 🏠 Local development (detailed)
+
+If you want to run the app fully locally (backend + frontend), follow these steps.
+
+Option A — Local Node / Mongo
+
+1. Start MongoDB (local or via Docker). If using Docker:
+
+```bash
+docker run -d --name beyondchats-mongo -p 27017:27017 mongo:6
+```
+
+2. Backend
+
+```bash
+cd backend
+npm install
+cp .env.example .env
+# set MONGODB_URI and API keys in .env
+npm run dev
+```
+
+3. Frontend
+
+```bash
+cd frontend
+npm install
+cp .env.template .env
+# set VITE_API_BASE_URL to http://localhost:3000 (or your backend port)
+npm run dev
+```
+
+Option B — Docker Compose (quick)
+
+1. From the repo root you can use the provided compose file (if present) to run services together:
+
+```bash
+cd backend
+docker-compose up --build
+```
+
+Notes
+- Ensure API keys (Google Custom Search, Gemini) are set in the backend `.env` before running enhancement jobs.
+- Frontend dev server runs on port `5173` by default; backend typically runs on `3000`.
+- If you prefer a production preview, build the frontend (`npm run build`) and serve from a static server.
+
+Security & Rate limiting
+- This project intentionally does not implement authentication on the API endpoints for simplicity and demo purposes; authentication and role-based access control are intentionally skipped. If you deploy this in production, add proper auth (OAuth/JWT) and API keys.
+- The backend includes rate-limiting middleware (`express-rate-limit`) to prevent abuse — ensure it's enabled in `src/app.js` when deploying behind a proxy. If you prefer stricter limits, adjust the configuration in `src/middleware/rateLimiter.js` or add IP-based blocking.
+
+Running the scraper and enhancement jobs
+- To scrape the 5 oldest articles from BeyondChats last page and store them in MongoDB:
+
+```bash
+cd backend
+npm run scrape
+```
+
+- To queue enhancements (process pending articles) you can use the API or the `Auto-Enhance` button in the frontend. Ensure Redis is running for the job queue. Use `docker-compose` in `backend/docker-compose.yml` if present.
 
 ## 🏗 Architecture
 

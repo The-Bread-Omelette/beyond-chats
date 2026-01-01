@@ -7,6 +7,7 @@ import {
 } from '../validators/articleValidators.js';
 import { validateRequest } from '../../../middleware/validateRequest.js';
 import { createLimiter } from '../../../middleware/rateLimiter.js';
+import { apiLimiter } from '../../../middleware/rateLimiter.js';
 
 const router = express.Router();
 
@@ -16,6 +17,12 @@ router.post(
   createArticleValidator,
   validateRequest,
   articleController.createArticle
+);
+
+router.post(
+  '/scrape',
+  apiLimiter,
+  articleController.scrapeLastPage
 );
 
 router.get(
@@ -42,6 +49,13 @@ router.delete(
   articleIdValidator,
   validateRequest,
   articleController.deleteArticle
+);
+
+// Clear entire collection (use with caution)
+router.delete(
+  '/',
+  apiLimiter,
+  articleController.clearAllArticles
 );
 
 export default router;

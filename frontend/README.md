@@ -1,16 +1,41 @@
-# React + Vite
+# BeyondChats — Frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+This frontend is a React + Vite dashboard for managing and auditing AI-enhanced blog content. It uses a dark glassmorphism theme and provides an overview of scraped articles and enhancement status.
 
-Currently, two official plugins are available:
+Core stack
+- Framework: React 19
+- Build tool: Vite
+- UI: Material UI (MUI) v7
+- Animations: Framer Motion
+- Styling: Emotion with design tokens
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+Features
+- Content dashboard with filtering by enhancement status
+- Queue management and enhancement job monitoring
+- Version comparison: original vs enhanced content
+- Accessibility options (reduced motion, high-contrast dark mode)
 
-## React Compiler
+Project structure (important folders)
+- `src/api` — Axios client and endpoint definitions
+- `src/components` — UI components (articles, layout, reusable UI)
+- `src/hooks` — Data fetching and enhancement helpers
+- `src/styles` — Theme and global styles
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+Setup
+1. Ensure Node.js 18+ is installed.
+2. Start the backend (locally or accessible host).
+3. In this folder run:
 
-## Expanding the ESLint configuration
+```bash
+cd frontend
+npm install
+cp .env.template .env
+# edit VITE_API_BASE_URL in .env
+npm run dev
+```
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+Scripts
+- `npm run dev` — start dev server
+- `npm run build` — build production assets
+- `npm run lint` — run ESLint
+- `npm run preview` — serve production build locally

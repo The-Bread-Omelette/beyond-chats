@@ -36,6 +36,16 @@ export const articleApi = {
     return data;
   },
 
+  scrapeLastPage: async () => {
+    const { data } = await apiClient.post('/articles/scrape');
+    return data;
+  },
+
+  clearAll: async () => {
+    const { data } = await apiClient.delete('/articles');
+    return data;
+  },
+
   getEnhancementStatus: async (id) => {
     const { data } = await apiClient.get(`/enhancement/status/${id}`);
     return data;

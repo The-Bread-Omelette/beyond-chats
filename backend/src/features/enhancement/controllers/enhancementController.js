@@ -119,3 +119,41 @@ export const getQueueStats = async (req, res, next) => {
     next(error);
   }
 };
+
+export const revertEnhancement = async (req, res, next) => {
+  try {
+    const article = await Article.findById(req.params.id);
+    if (!article) {
+      throw new AppError('Article not found', 404);
+    }
+
+    // If originalContent exists, restore it; otherwise mark as pending and clear enhanced fields
+    const update = article.originalContent
+      ? { content: article.originalContent, enhancementStatus: 'pending', $unset: { references: 1, enhancedAt: 1, enhancementError: 1 } }
+      : { enhancementStatus: 'pending', $unset: { references: 1, enhancedAt: 1, enhancementError: 1, content: 1 } };
+
+    await article.updateOne(update);
+
+    res.json({ success: true, message: 'Enhancement reverted' });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const revertAllEnhancements = async (req, res, next) => {
+  try {
+    const articles = await Article.find({ enhancementStatus: 'completed' });
+    const ops = articles.map(a => {
+      const update = a.originalContent
+        ? { content: a.originalContent, enhancementStatus: 'pending', $unset: { references: 1, enhancedAt: 1, enhancementError: 1 } }
+        : { enhancementStatus: 'pending', $unset: { references: 1, enhancedAt: 1, enhancementError: 1 } };
+      return a.updateOne(update);
+    });
+
+    await Promise.all(ops);
+
+    res.json({ success: true, message: `Reverted ${ops.length} articles` });
+  } catch (error) {
+    next(error);
+  }
+};

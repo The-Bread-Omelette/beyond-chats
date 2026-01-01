@@ -26,6 +26,8 @@ import PageTransition from '../components/ui/PageTransition';
 import StatsCards from '../components/dashboard/StatsCards';
 import SmartSearch from '../components/ui/SmartSearch';
 import { useToast } from '../components/ui/ToastProvider';
+import { articleApi } from '../api/endpoints/articles';
+import apiClient from '../api/client';
 
 const HomePage = () => {
   const navigate = useNavigate();
@@ -37,7 +39,7 @@ const HomePage = () => {
 
   const { show } = useToast();
   const { articles, pagination, loading, error, refetch } = useArticles(params);
-  const { enhanceArticle, enhanceAll, enhancing } = useEnhancement();
+  const { enhanceArticle, enhanceAll, isEnhancing, enhancingAll } = useEnhancement();
 
   const handleView = (id) => navigate(`/article/${id}`);
 
@@ -48,6 +50,57 @@ const HomePage = () => {
       setTimeout(() => refetch(), 800);
     } catch (err) {
       show('Enhancement failed. Please try again.', { severity: 'error' });
+    }
+  };
+
+  // Save enhancement to DB: prompt, then update article content and mark as completed
+  const handleLocalEnhance = async (id) => {
+    try {
+      const existing = articles.find(a => a._id === id)?.content || '';
+      const value = window.prompt('Enter enhanced content (will be saved to DB):', existing);
+      if (value === null) return;
+
+      await articleApi.update(id, { content: value, enhancementStatus: 'completed', enhancedAt: new Date().toISOString() });
+      show('Saved enhancement to database', { severity: 'success' });
+      setTimeout(() => refetch(), 500);
+    } catch (err) {
+      console.error(err);
+      show('Failed to save enhancement to database', { severity: 'error' });
+    }
+  };
+
+  const handleScrape = async () => {
+    try {
+      await articleApi.scrapeLastPage();
+      show('Scrape started; new articles may be added', { severity: 'success' });
+      setTimeout(() => refetch(), 1000);
+    } catch (err) {
+      console.error(err);
+      show('Scrape failed', { severity: 'error' });
+    }
+  };
+
+  const handleClearAll = async () => {
+    if (!window.confirm('Are you sure you want to delete ALL articles?')) return;
+    try {
+      await articleApi.clearAll();
+      show('All articles deleted', { severity: 'success' });
+      setTimeout(() => refetch(), 500);
+    } catch (err) {
+      console.error(err);
+      show('Failed to clear articles', { severity: 'error' });
+    }
+  };
+
+  const handleRevertAll = async () => {
+    try {
+      // Call revert-all endpoint
+      await apiClient.post('/enhancement/revert-all');
+      show('Reverted all enhancements', { severity: 'success' });
+      setTimeout(() => refetch(), 800);
+    } catch (err) {
+      console.error(err);
+      show('Failed to revert all', { severity: 'error' });
     }
   };
 
@@ -99,11 +152,20 @@ const HomePage = () => {
             <Button
               variant="contained"
               onClick={() => enhanceAll(10)}
-              disabled={enhancing}
+              disabled={enhancingAll}
               size={isMobile ? 'medium' : 'large'}
               sx={{ height: 48, whiteSpace: 'nowrap' }}
             >
-              {enhancing ? 'Processing...' : 'Auto-Enhance Stack'}
+              {enhancingAll ? 'Processing stack...' : 'Auto-Enhance Stack'}
+            </Button>
+            <Button variant="outlined" onClick={handleScrape} size={isMobile ? 'medium' : 'large'}>
+              Scrape Last Page
+            </Button>
+            <Button variant="outlined" color="warning" onClick={handleClearAll}>
+              Clear DB
+            </Button>
+            <Button variant="text" color="inherit" onClick={handleRevertAll}>
+              Revert All
             </Button>
           </Box>
         </Box>
@@ -173,6 +235,18 @@ const HomePage = () => {
                   articles={filteredArticles}
                   onView={handleView}
                   onEnhance={handleEnhance}
+                  onLocalEnhance={handleLocalEnhance}
+                  isEnhancing={isEnhancing}
+                  onRevert={async (id) => {
+                      try {
+                        await apiClient.post(`/enhancement/revert/${id}`);
+                        show('Reverted enhancement', { severity: 'success' });
+                        setTimeout(() => refetch(), 600);
+                      } catch (err) {
+                        console.error(err);
+                        show('Failed to revert', { severity: 'error' });
+                      }
+                    }}
                 />
               ) : (
                 <motion.div

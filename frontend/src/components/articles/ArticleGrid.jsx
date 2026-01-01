@@ -4,7 +4,7 @@ import { Box } from '@mui/material';
 import ArticleCard from './ArticleCard';
 import RevealOnScroll from '../ui/RevealOnScroll';
 
-const ArticleGrid = ({ articles, onView, onEnhance }) => {
+const ArticleGrid = ({ articles, onView, onEnhance, onLocalEnhance, onRevert, isEnhancing }) => {
   return (
     <AnimatedList>
       <Box
@@ -17,7 +17,14 @@ const ArticleGrid = ({ articles, onView, onEnhance }) => {
         {articles.map((article) => (
           <motion.div key={article._id} variants={itemVariants}>
             <RevealOnScroll>
-              <ArticleCard article={article} onView={onView} onEnhance={onEnhance} />
+              <ArticleCard
+                article={article}
+                onView={onView}
+                onEnhance={onEnhance}
+                onLocalEnhance={onLocalEnhance}
+                onRevert={onRevert}
+                isEnhancing={isEnhancing ? isEnhancing(article._id) : false}
+              />
             </RevealOnScroll>
           </motion.div>
         ))}

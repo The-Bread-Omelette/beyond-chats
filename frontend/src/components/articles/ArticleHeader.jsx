@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { formatDateTime } from '../../utils/formatters';
 import StatusReveal from '../ui/StatusReveal';
 
-const ArticleHeader = ({ article, onEnhance, onCompare }) => {
+const ArticleHeader = ({ article, onEnhance, onCompare, isEnhancing }) => {
   const navigate = useNavigate();
 
   return (
@@ -93,9 +93,10 @@ const ArticleHeader = ({ article, onEnhance, onCompare }) => {
               startIcon={<AutoAwesome />}
               onClick={() => onEnhance(article._id)}
               fullWidth
+              disabled={Boolean(isEnhancing)}
               sx={{ boxShadow: '0 0 20px rgba(59, 130, 246, 0.3)' }}
             >
-              Start Enhancement
+              {isEnhancing ? 'Enhancing...' : 'Start Enhancement'}
             </Button>
           )}
         </Stack>

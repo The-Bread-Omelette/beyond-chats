@@ -10,14 +10,21 @@ let server;
 
 async function startServer() {
   try {
-    await connectDB();
-    await scrapeOldestArticles();
+    logger.info('Starting server...', {
+      nodeEnv: process.env.NODE_ENV,
+      port: PORT
+    });
 
+    await connectDB();
     
+    // Disable initial scraping on startup
+    // await scrapeOldestArticles();
+    logger.info('Skipping initial article scraping');
+
     server = app.listen(PORT, () => {
       logger.info(`Server running on port ${PORT}`);
     });
-    
+
     process.on('unhandledRejection', (err) => {
       logger.error('Unhandled Rejection', { error: err.message, stack: err.stack });
       shutdown('unhandled rejection');
@@ -31,7 +38,7 @@ async function startServer() {
     process.on('SIGTERM', () => shutdown('SIGTERM'));
     process.on('SIGINT', () => shutdown('SIGINT'));
   } catch (error) {
-    logger.error('Failed to start server', { error: error.message });
+    logger.error('Failed to start server', { error: error.message, stack: error.stack });
     process.exit(1);
   }
 }
@@ -61,4 +68,7 @@ async function shutdown(signal) {
   }
 }
 
-startServer();
+startServer().catch(err => {
+  console.error('FATAL ERROR:', err);
+  process.exit(1);
+});
