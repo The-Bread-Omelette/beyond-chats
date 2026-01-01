@@ -10,21 +10,21 @@ const limit = pLimit(config.enhancement.maxConcurrent);
 
 export async function processArticleEnhancement(articleId) {
   const article = await Article.findById(articleId);
-  
+
   if (!article) {
     throw new Error(`Article not found: ${articleId}`);
   }
 
-  logger.info(`Starting enhancement for article`, { 
+  logger.info(`Starting enhancement for article`, {
     articleId,
-    title: article.title 
+    title: article.title
   });
 
   await article.updateOne({ enhancementStatus: 'processing' });
 
   try {
     const searchResults = await searchCompetingArticles(article.title);
-    
+
     if (searchResults.length < config.enhancement.minCompetingArticles) {
       throw new Error(
         `Insufficient search results: ${searchResults.length} found, ` +
@@ -46,7 +46,7 @@ export async function processArticleEnhancement(articleId) {
       throw new Error('Failed to scrape any competing articles');
     }
 
-    logger.info(`Scraped ${scrapedArticles.length} competing articles`, { 
+    logger.info(`Scraped ${scrapedArticles.length} competing articles`, {
       articleId,
       sources: scrapedArticles.map(a => a.url)
     });
@@ -58,26 +58,27 @@ export async function processArticleEnhancement(articleId) {
 
     await article.updateOne({
       content,
+      originalContent: article.originalContent || article.content, // Preserve original content
       references,
       enhancementStatus: 'completed',
       enhancedAt: new Date(),
       $unset: { enhancementError: 1 }
     });
 
-    logger.info(`Successfully enhanced article`, { 
+    logger.info(`Successfully enhanced article`, {
       articleId,
       title: article.title,
       referencesCount: references.length
     });
 
-    return { 
-      success: true, 
+    return {
+      success: true,
       articleId,
       referencesCount: references.length
     };
 
   } catch (error) {
-    logger.error(`Enhancement failed`, { 
+    logger.error(`Enhancement failed`, {
       articleId,
       title: article.title,
       error: error.message,

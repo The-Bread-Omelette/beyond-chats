@@ -28,23 +28,25 @@ export const createArticle = async (req, res, next) => {
 
 export const getAllArticles = async (req, res, next) => {
   try {
-    const { 
-      status, 
-      page = 1, 
-      limit = 20,
-      sortBy = 'createdAt',
-      order = 'asc'
-    } = req.query;
-    
+    const { status } = req.query;
+    const page = parseInt(req.query.page) || 1;
+    const limit = req.query.limit ? parseInt(req.query.limit) : 5; // default to oldest 5
+    const sortBy = req.query.sortBy;
+    const order = req.query.order;
+
     const query = status ? { enhancementStatus: status } : {};
     const skip = (page - 1) * limit;
-    const sort = { [sortBy]: order === 'desc' ? -1 : 1 };
-    
+
+    // If client provided sortBy/order, respect it. Otherwise default to oldest first.
+    const sort = sortBy
+      ? { [sortBy]: order === 'desc' ? -1 : 1 }
+      : { createdAt: 1 };
+
     const [articles, total] = await Promise.all([
       Article.find(query)
         .sort(sort)
         .skip(skip)
-        .limit(parseInt(limit))
+        .limit(limit)
         .select('-__v'),
       Article.countDocuments(query)
     ]);

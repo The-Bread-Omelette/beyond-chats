@@ -45,9 +45,8 @@ export function extractWithReadability(html, url, options = {}) {
       return null;
     }
 
-    const cleanedText = article.textContent
-      .replace(/\s+/g, ' ')
-      .trim();
+    // Preserve newlines but clean other whitespace
+    const cleanedText = cleanText(article.textContent);
 
     if (cleanedText.length < (options.minLength || 500)) {
       return null;
@@ -55,7 +54,7 @@ export function extractWithReadability(html, url, options = {}) {
 
     return {
       title: article.title || 'Unknown',
-      textContent: cleanedText.substring(0, options.maxLength || 6000)
+      textContent: cleanedText.substring(0, options.maxLength || 8000)
     };
   } catch (error) {
     logger.debug('Readability extraction failed', { error: error.message });
@@ -66,9 +65,9 @@ export function extractWithReadability(html, url, options = {}) {
 export function extractWithCheerio(html, options = {}) {
   try {
     const $ = cheerio.load(html);
-    
+
     $(REMOVE_SELECTORS.join(', ')).remove();
-    
+
     let content = null;
     for (const selector of CONTENT_SELECTORS) {
       const element = $(selector).first();
@@ -77,30 +76,27 @@ export function extractWithCheerio(html, options = {}) {
         break;
       }
     }
-    
+
     if (!content || content.text().trim().length < (options.minLength || 500)) {
       content = $('body');
     }
-    
-    const text = content.text()
-      .replace(/\s+/g, ' ')
-      .replace(/\n+/g, '\n')
-      .trim();
+
+    const text = cleanText(content.text());
 
     if (text.length < (options.minLength || 500)) {
       return null;
     }
 
-    const title = 
-      $('h1').first().text().trim() || 
-      $('meta[property="og:title"]').attr('content') || 
+    const title =
+      $('h1').first().text().trim() ||
+      $('meta[property="og:title"]').attr('content') ||
       $('meta[name="twitter:title"]').attr('content') ||
-      $('title').text().trim() || 
+      $('title').text().trim() ||
       'Unknown';
 
     return {
       title: title.substring(0, 200),
-      textContent: text.substring(0, options.maxLength || 6000)
+      textContent: text.substring(0, options.maxLength || 8000)
     };
   } catch (error) {
     logger.debug('Cheerio extraction failed', { error: error.message });
@@ -109,8 +105,15 @@ export function extractWithCheerio(html, options = {}) {
 }
 
 export function cleanText(text) {
+  if (!text) return '';
   return text
-    .replace(/\s+/g, ' ')
-    .replace(/\n+/g, '\n')
+    // Replace non-breaking spaces with normal spaces
+    .replace(/\u00A0/g, ' ')
+    // Replace multiple spaces/tabs with single space (but NOT newlines)
+    .replace(/[ \t]+/g, ' ')
+    // Replace 3+ newlines with 2 newlines (paragraph break)
+    .replace(/\n\s*\n\s*\n/g, '\n\n')
+    // Replace multiple newlines with 2
+    .replace(/\n{3,}/g, '\n\n')
     .trim();
 }

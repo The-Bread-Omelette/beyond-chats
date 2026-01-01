@@ -141,8 +141,13 @@ PORT=3000
 MONGO_URI=mongodb://localhost:27017/beyondchats
 
 ### Redis
+# Use a managed Redis by setting `REDIS_URL` (supports `rediss://` for TLS).
+# Example: REDIS_URL=rediss://default:your_token_here@special-colt-7095.upstash.io:6379
+REDIS_URL=
+# Or use host/port/password (defaults to local redis service when using docker-compose)
 REDIS_HOST=localhost
 REDIS_PORT=6379
+REDIS_PASSWORD=
 
 ### API Keys (required for Phase 2)
 GROQ_API_KEY=your_groq_api_key

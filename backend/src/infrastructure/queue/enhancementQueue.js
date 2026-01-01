@@ -4,9 +4,8 @@ import logger from '../../utils/logger.js';
 import config from '../../config/services.js';
 import { env } from '../../config/env.js';
 
-const connection = {
-  host: env.REDIS_HOST,
-  port: env.REDIS_PORT,
+// Support either a single REDIS_URL (managed services) or host/port (local/docker)
+const baseConnectionOptions = {
   maxRetriesPerRequest: null,
   enableReadyCheck: false,
   retryStrategy: (times) => {
@@ -14,6 +13,13 @@ const connection = {
     return delay;
   }
 };
+
+let connection;
+if (env.REDIS_URL) {
+  connection = { url: env.REDIS_URL, ...baseConnectionOptions };
+} else {
+  connection = { host: env.REDIS_HOST, port: env.REDIS_PORT, password: env.REDIS_PASSWORD, ...baseConnectionOptions };
+}
 
 export const enhancementQueue = new Queue('article-enhancement', {
   connection,

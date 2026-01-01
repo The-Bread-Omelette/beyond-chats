@@ -1,5 +1,6 @@
 import express from 'express';
 import cors from 'cors';
+import { env } from './config/env.js';
 import helmet from 'helmet';
 import mongoSanitize from 'express-mongo-sanitize';
 import routes from './routes/index.js';
@@ -12,7 +13,7 @@ app.use(helmet());
 app.use(mongoSanitize());
 
 app.use(cors({
-  origin:['http://localhost:5173'],
+  origin: env.ALLOWED_ORIGINS.split(','),
   methods:['GET','POST','PUT','DELETE'],
   credentials:true
 }));

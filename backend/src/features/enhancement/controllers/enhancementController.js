@@ -40,11 +40,13 @@ export const enhanceSingleArticle = async (req, res, next) => {
 
 export const enhanceAllPendingArticles = async (req, res, next) => {
   try {
-    const { limit = 10 } = req.query;
-    
+    const limit = req.query.limit ? parseInt(req.query.limit) : 5; // default to oldest 5
+
     const articles = await Article.find({ 
       enhancementStatus: 'pending' 
-    }).limit(parseInt(limit));
+    })
+      .sort({ createdAt: 1 })
+      .limit(limit);
 
     if (articles.length === 0) {
       return res.json({

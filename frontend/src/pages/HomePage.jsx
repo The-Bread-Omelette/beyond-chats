@@ -26,7 +26,6 @@ import PageTransition from '../components/ui/PageTransition';
 import StatsCards from '../components/dashboard/StatsCards';
 import SmartSearch from '../components/ui/SmartSearch';
 import { useToast } from '../components/ui/ToastProvider';
-import VisualBanner from '../components/ui/VisualBanner';
 
 const HomePage = () => {
   const navigate = useNavigate();
@@ -109,13 +108,7 @@ const HomePage = () => {
           </Box>
         </Box>
 
-        {/* Visual Banner */}
-        <VisualBanner
-          title="Make your scraped content beautiful"
-          subtitle="AI enhancements, rich previews, and beautiful presentation to turn raw data into value."
-          cta="Browse Articles"
-          onCta={() => window.scrollTo({ top: 600, behavior: 'smooth' })}
-        />
+        {/* Visual Banner removed for cleaner dashboard */}
 
         {/* Stats */}
         <StatsCards articles={articles} loading={loading} />

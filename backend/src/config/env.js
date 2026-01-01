@@ -33,8 +33,11 @@ export const env = {
   
   MONGO_URI: getEnvVar('MONGO_URI'),
   
+  // Optional: single URL for managed Redis services (e.g., Upstash, Redis Cloud)
+  REDIS_URL: process.env.REDIS_URL,
   REDIS_HOST: getEnvVar('REDIS_HOST', 'localhost'),
   REDIS_PORT: parseInt(getEnvVar('REDIS_PORT', '6379')),
+  REDIS_PASSWORD: process.env.REDIS_PASSWORD,
   
   GROQ_API_KEY: getEnvVar('GROQ_API_KEY'),
   SERP_API_KEY: getEnvVar('SERP_API_KEY'),

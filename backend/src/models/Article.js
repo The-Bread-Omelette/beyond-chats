@@ -2,15 +2,15 @@ import mongoose from 'mongoose';
 
 const ArticleSchema = new mongoose.Schema(
   {
-    title: { 
-      type: String, 
+    title: {
+      type: String,
       required: true,
       trim: true,
       maxlength: 200
     },
-    url: { 
-      type: String, 
-      required: true, 
+    url: {
+      type: String,
+      required: true,
       unique: true,
       trim: true
     },
@@ -23,8 +23,12 @@ const ArticleSchema = new mongoose.Schema(
       type: String,
       trim: true
     },
+    originalContent: {
+      type: String,
+      trim: true
+    },
     publishedAt: Date,
-    
+
     enhancementStatus: {
       type: String,
       enum: ['pending', 'processing', 'completed', 'failed'],
@@ -38,7 +42,7 @@ const ArticleSchema = new mongoose.Schema(
       url: { type: String, required: true }
     }]
   },
-  { 
+  {
     timestamps: true,
     toJSON: { virtuals: true },
     toObject: { virtuals: true }

@@ -10,6 +10,10 @@ services:
     image: redis:7-alpine
     volumes:
       - redis_data:/data
+    # By default docker-compose brings up a local redis service. If you prefer
+    # to use an external/managed Redis, set REDIS_HOST in your environment
+    # (for example: REDIS_HOST=your-redis-host). The app will fall back to
+    # connecting to the 'redis' service when REDIS_HOST is not set.
 
 volumes:
   mongodb_data:
