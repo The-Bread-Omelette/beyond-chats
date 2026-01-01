@@ -208,7 +208,6 @@ export default async function scrapeOldestArticles(customClient) {
             : articleData.excerpt;
           const cleaned = cleanContent(raw || '');
           
-          scraped++;
 
           await Article.create({
             title: articleData.title,

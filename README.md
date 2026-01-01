@@ -2,7 +2,7 @@
 
 This full-stack application scrapes articles from BeyondChats, enhances them using AI based on competing content from Google Search, and presents them in a premium, modern dashboard.
 
-## Live Link : [Link](https://beyond-chats-oqr7xa8vh-niggas-projects-65df164c.vercel.app)
+## Live Link : [Link](beyond-chats-beryl.vercel.app)
 
 ## Features
 
