@@ -13,10 +13,11 @@ async function startServer() {
     await connectDB();
     await scrapeOldestArticles();
 
-    app.listen(PORT,()=>{
-      console.log(`Server running on port ${PORT}`);
+    
+    server = app.listen(PORT, () => {
+      logger.info(`Server running on port ${PORT}`);
     });
-
+    
     process.on('unhandledRejection', (err) => {
       logger.error('Unhandled Rejection', { error: err.message, stack: err.stack });
       shutdown('unhandled rejection');
