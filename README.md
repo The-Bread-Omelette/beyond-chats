@@ -20,7 +20,7 @@ This full-stack application scrapes articles from BeyondChats, enhances them usi
 
 ---
 
-## 🛠 Tech Stack
+##  Tech Stack
 
 -   **Frontend**: React, Vite, Material UI (MUI), Framer Motion.
 -   **Backend**: Node.js, Express, MongoDB (Mongoose).
@@ -28,7 +28,7 @@ This full-stack application scrapes articles from BeyondChats, enhances them usi
 
 ---
 
-## 🚀 Setup & Installation
+##  Setup & Installation
 
 ### Prerequisites
 - Node.js (v18+)
@@ -67,7 +67,7 @@ The app will be available at `http://localhost:5173`.
 
 ---
 
-## 🏠 Local development (detailed)
+##  Local development (detailed)
 
 If you want to run the app fully locally (backend + frontend), follow these steps.
 
@@ -127,7 +127,7 @@ npm run scrape
 
 - To queue enhancements (process pending articles) you can use the API or the `Auto-Enhance` button in the frontend. Ensure Redis is running for the job queue. Use `docker-compose` in `backend/docker-compose.yml` if present.
 
-## 🏗 Architecture
+## Architecture
 
 ```mermaid
 graph TD
@@ -140,13 +140,9 @@ graph TD
     D -->|Update| C
 ```
 
-## 🌐 Live Demo
-
-[Link to Live Demo](http://localhost:5173) (Local)
-
 ---
 
-## 📝 Usage Guide
+##  Usage Guide
 
 1.  **Dashboard**: View all scraped articles.
 2.  **Auto-Enhance**: Click "Auto-Enhance Stack" to process pending articles in the background.
