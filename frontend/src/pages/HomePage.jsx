@@ -18,6 +18,7 @@ import {
   FilterListRounded,
 } from '@mui/icons-material';
 
+import empty_img from '../assets/empty-state.png';
 import { useArticles } from '../hooks/useArticles';
 import { useEnhancement } from '../hooks/useEnhancement';
 import ArticleGrid from '../components/articles/ArticleGrid';
@@ -282,7 +283,7 @@ const HomePage = () => {
                   <Box sx={{ textAlign: 'center', py: 10 }}>
                     <Box
                       component="img"
-                      src="/assets/empty-state.png"
+                      src={empty_img}
                       alt="No results"
                       sx={{ width: 240, height: 240, objectFit: 'contain', opacity: 0.8, mb: 2 }}
                     />

@@ -1,4 +1,5 @@
 import { createTheme } from '@mui/material/styles';
+import processing_bg from '../assets/processing_bg.svg';
 
 const glass = {
   background: 'rgba(20, 20, 25, 0.7)',
@@ -71,7 +72,7 @@ export const theme = createTheme({
           backgroundColor: '#050505',
           backgroundImage: `
             radial-gradient(circle at 50% 0%, #151515 0%, #050505 60%),
-            url("/assets/processing-bg.gif")
+            url(${processing_bg})
           `,
           backgroundSize: '100% 100%, 120% 120%', // Scale up bg image for movement
           backgroundRepeat: 'no-repeat, no-repeat',
